@@ -2,12 +2,21 @@
 
 namespace Tests\Feature\Auth;
 
+use Database\Seeders\PermissionSeeder;
+use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RegistrationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seed([PermissionSeeder::class, RoleSeeder::class]);
+    }
 
     public function test_registration_screen_can_be_rendered(): void
     {

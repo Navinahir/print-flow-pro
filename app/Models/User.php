@@ -11,6 +11,8 @@ use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Collection;
@@ -83,5 +85,29 @@ class User extends Authenticatable implements FilamentUser
                 RoleEnum::adminRoles(),
             ),
         );
+    }
+
+    /**
+     * @return HasOne<Merchant, $this>
+     */
+    public function merchant(): HasOne
+    {
+        return $this->hasOne(Merchant::class);
+    }
+
+    /**
+     * @return HasMany<UploadJob, $this>
+     */
+    public function uploadJobs(): HasMany
+    {
+        return $this->hasMany(UploadJob::class);
+    }
+
+    /**
+     * @return HasMany<AuditLog, $this>
+     */
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class);
     }
 }

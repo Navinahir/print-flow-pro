@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers\Filament;
 
+use App\Filament\NavigationGroup;
+use App\Filament\Widgets\PrintFlowStatsWidget;
+use App\Filament\Widgets\RecentAuditLogsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup as FilamentNavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -24,14 +28,26 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $brandName = config('printflow.brand.name', 'PrintFlow Pro');
+
         return $panel
             ->default()
             ->id('admin')
-            ->path('admin')
+            ->path(config('printflow.admin.path', 'bosslogin'))
             ->login()
             ->authGuard('web')
+            ->brandName($brandName)
+            ->brandLogo(config('printflow.brand.logo'))
+            ->favicon(config('printflow.brand.favicon'))
             ->colors([
                 'primary' => Color::Amber,
+                'gray' => Color::Slate,
+            ])
+            ->navigationGroups([
+                FilamentNavigationGroup::make(NavigationGroup::Overview->value),
+                FilamentNavigationGroup::make(NavigationGroup::MerchantsBilling->value),
+                FilamentNavigationGroup::make(NavigationGroup::Operations->value),
+                FilamentNavigationGroup::make(NavigationGroup::System->value),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
@@ -40,6 +56,8 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                PrintFlowStatsWidget::class,
+                RecentAuditLogsWidget::class,
                 AccountWidget::class,
             ])
             ->middleware([
@@ -55,6 +73,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->sidebarCollapsibleOnDesktop();
     }
 }

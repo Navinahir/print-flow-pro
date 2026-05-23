@@ -52,6 +52,7 @@ Seeders run in order via `DatabaseSeeder`:
 | --- | --- |
 | `PermissionSeeder` | Creates permissions from `config/permissions.php` |
 | `RoleSeeder` | Creates roles and assigns permissions (`super_admin` receives all) |
+| `BillingPlanSeeder` | Seeds Starter, Pro, and Enterprise plans |
 | `AdminUserSeeder` | Creates the default super admin user |
 
 ```bash
@@ -74,7 +75,7 @@ php artisan migrate:fresh --seed
 | Email | `admin@printflowpro.test` |
 | Password | `password` |
 
-Filament (`/admin`) requires the `access_admin_panel` permission. Granted to `super_admin` (all permissions) and `regional_partner` (subset). Merchants use Breeze at `/login` only.
+Filament (`/admin`) requires the `access_admin_panel` permission. Granted to `super_admin` (all permissions) and `regional_partner` (subset). Merchants use Breeze at `/login` and `/uploads`.
 
 ## Local development
 
@@ -97,7 +98,9 @@ npm run dev
 | `/` | Welcome |
 | `/login`, `/register` | Breeze merchant auth |
 | `/dashboard` | Authenticated merchant area |
+| `/` | SaaS landing page |
 | `/admin` | Filament admin panel (`access_admin_panel` permission) |
+| `/uploads` | Merchant upload history (auth + verified) |
 
 Run tests:
 
@@ -129,6 +132,39 @@ app/
 ```
 
 Authorization is defined in `config/permissions.php` (groups + role assignments) with matching cases in `App\Enums\Permission` for type-safe checks.
+
+### Domain models
+
+| Model | Purpose |
+| --- | --- |
+| `Merchant` | Shopee seller account |
+| `BillingPlan` | Subscription tier |
+| `UploadJob` | PDF / file processing job |
+| `PdfUpload` | Individual uploaded PDF |
+| `PickingList` | Picking list import/output |
+| `DeliveryLabel` | Generated delivery label |
+| `AuditLog` | Admin, upload, and auth activity |
+
+Activity is recorded via `App\Services\AuditLogService` (auth events, upload job lifecycle, Filament CRUD).
+
+### Upload workflow
+
+Merchants register at `/register` (creates a `merchants` profile automatically). Upload types:
+
+| Type | Files |
+| --- | --- |
+| `order_pdf` | PDF |
+| `thermal_label` | PDF |
+| `picking_list` | CSV, XLS, XLSX |
+| `delivery_label` | PDF |
+
+```bash
+# Merchant routes (after login + email verification)
+/uploads          # history
+/uploads/create   # drag & drop uploader
+```
+
+Configure limits in `.env`: `PRINTFLOW_UPLOAD_MAX_KB`, `PRINTFLOW_UPLOAD_MAX_FILES`.
 
 Design principles (see `PROJECT_ARCHITECTURE.md` and `CURSOR_RULES.md`):
 
