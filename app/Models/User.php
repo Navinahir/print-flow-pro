@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\Permission as PermissionEnum;
 use App\Enums\Role as RoleEnum;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
@@ -12,8 +13,15 @@ use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * @property-read Collection<int, Role> $roles
+ * @property-read Collection<int, Permission> $permissions
+ */
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<UserFactory> */
@@ -49,6 +57,31 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
+        return $this->can(PermissionEnum::AccessAdminPanel->value);
+    }
+
+    public function isSuperAdmin(): bool
+    {
         return $this->hasRole(RoleEnum::SuperAdmin->value);
+    }
+
+    public function isRegionalPartner(): bool
+    {
+        return $this->hasRole(RoleEnum::RegionalPartner->value);
+    }
+
+    public function isMerchant(): bool
+    {
+        return $this->hasRole(RoleEnum::Merchant->value);
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->hasAnyRole(
+            array_map(
+                static fn (RoleEnum $role): string => $role->value,
+                RoleEnum::adminRoles(),
+            ),
+        );
     }
 }

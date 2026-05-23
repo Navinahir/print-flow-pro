@@ -44,7 +44,37 @@ npm install
 npm run build
 ```
 
-Default admin (after seeding): `admin@printflow.test` / `password`
+### Database seeding
+
+Seeders run in order via `DatabaseSeeder`:
+
+| Seeder | Purpose |
+| --- | --- |
+| `PermissionSeeder` | Creates permissions from `config/permissions.php` |
+| `RoleSeeder` | Creates roles and assigns permissions (`super_admin` receives all) |
+| `AdminUserSeeder` | Creates the default super admin user |
+
+```bash
+# Full seed (permissions, roles, admin user)
+php artisan db:seed
+
+# Individual seeders
+php artisan db:seed --class=PermissionSeeder
+php artisan db:seed --class=RoleSeeder
+php artisan db:seed --class=AdminUserSeeder
+
+# Reset database and reseed
+php artisan migrate:fresh --seed
+```
+
+**Default super admin** (local only — change in production):
+
+| Field | Value |
+| --- | --- |
+| Email | `admin@printflowpro.test` |
+| Password | `password` |
+
+Filament (`/admin`) requires the `access_admin_panel` permission. Granted to `super_admin` (all permissions) and `regional_partner` (subset). Merchants use Breeze at `/login` only.
 
 ## Local development
 
@@ -67,7 +97,7 @@ npm run dev
 | `/` | Welcome |
 | `/login`, `/register` | Breeze merchant auth |
 | `/dashboard` | Authenticated merchant area |
-| `/admin` | Filament admin panel (`super_admin` role) |
+| `/admin` | Filament admin panel (`access_admin_panel` permission) |
 
 Run tests:
 
@@ -97,6 +127,8 @@ app/
 ├── Services/     # Domain services (PDF, picking, labels)
 └── Support/      # Shared helpers and utilities
 ```
+
+Authorization is defined in `config/permissions.php` (groups + role assignments) with matching cases in `App\Enums\Permission` for type-safe checks.
 
 Design principles (see `PROJECT_ARCHITECTURE.md` and `CURSOR_RULES.md`):
 
