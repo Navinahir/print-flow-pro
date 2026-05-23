@@ -3,7 +3,7 @@
 return [
 
     'brand' => [
-        'name' => env('PRINTFLOW_BRAND_NAME', 'PrintFlow Pro'),
+        'name' => env('PRINTFLOW_BRAND_NAME', 'XY Cubic Shopee'),
         'logo' => env('PRINTFLOW_BRAND_LOGO'),
         'favicon' => env('PRINTFLOW_BRAND_FAVICON'),
     ],

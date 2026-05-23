@@ -1,6 +1,6 @@
-# PrintFlow Pro
+# XY Cubic Shopee
 
-PrintFlow Pro helps Shopee sellers process thermal labels, order PDFs, and picking lists locally: validate uploads, merge PDFs, normalize layouts, and produce print-ready outputs—without Shopee API integration in Phase 1.
+XY Cubic Shopee helps Shopee sellers process thermal labels, order PDFs, and picking lists locally: validate uploads, merge PDFs, normalize layouts, and produce print-ready outputs—without Shopee API integration in Phase 1.
 
 ## Tech stack
 
@@ -72,7 +72,7 @@ php artisan migrate:fresh --seed
 
 | Field | Value |
 | --- | --- |
-| Email | `admin@printflowpro.test` |
+| Email | `admin@example.com` |
 | Password | `password` |
 
 Filament (`/admin`) requires the `access_admin_panel` permission. Granted to `super_admin` (all permissions) and `regional_partner` (subset). Merchants use Breeze at `/login` and `/uploads`.

@@ -10,7 +10,7 @@ use Illuminate\Database\Seeder;
 
 class AdminUserSeeder extends Seeder
 {
-    public const ADMIN_EMAIL = 'admin@printflowpro.test';
+    public const ADMIN_EMAIL = 'admin@example.com';
 
     public function run(): void
     {

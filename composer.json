@@ -1,9 +1,9 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "printflow/print-flow-pro",
+    "name": "xycubicshopee/xy-cubic-shopee",
     "type": "project",
-    "description": "PrintFlow Pro — Shopee seller PDF processing, merging, and print-ready outputs.",
-    "keywords": ["laravel", "filament", "pdf", "shopee"],
+    "description": "XY Cubic Shopee — Shopee seller PDF processing, merging, and print-ready outputs.",
+    "keywords": ["laravel", "filament", "pdf", "shopee", "xycubic"],
     "license": "MIT",
     "require": {
         "php": "^8.3",

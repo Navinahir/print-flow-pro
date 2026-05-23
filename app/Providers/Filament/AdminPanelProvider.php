@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\NavigationGroup;
-use App\Filament\Widgets\PrintFlowStatsWidget;
+use App\Filament\Widgets\PlatformStatsWidget;
 use App\Filament\Widgets\RecentAuditLogsWidget;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -28,7 +28,7 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $brandName = config('printflow.brand.name', 'PrintFlow Pro');
+        $brandName = config('printflow.brand.name', 'XY Cubic Shopee');
 
         return $panel
             ->default()
@@ -56,7 +56,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
-                PrintFlowStatsWidget::class,
+                PlatformStatsWidget::class,
                 RecentAuditLogsWidget::class,
                 AccountWidget::class,
             ])

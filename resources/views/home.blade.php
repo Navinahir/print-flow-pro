@@ -11,7 +11,7 @@
                     Merge, normalize &amp; print — without the API
                 </h1>
                 <p class="mt-6 text-lg leading-relaxed text-slate-600">
-                    Upload thermal labels, order PDFs, and picking lists. PrintFlow Pro validates, merges, and prepares print-ready outputs locally — fast, secure, and mobile-friendly.
+                    Upload thermal labels, order PDFs, and picking lists. {{ config('printflow.brand.name') }} validates, merges, and prepares print-ready outputs locally — fast, secure, and mobile-friendly.
                 </p>
                 <div class="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
                     <a href="{{ route('register') }}" class="w-full rounded-lg bg-amber-600 px-6 py-3 text-center text-sm font-semibold text-white shadow-lg shadow-amber-600/25 hover:bg-amber-500 sm:w-auto">

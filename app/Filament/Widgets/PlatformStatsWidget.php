@@ -11,7 +11,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
-class PrintFlowStatsWidget extends StatsOverviewWidget
+class PlatformStatsWidget extends StatsOverviewWidget
 {
     protected static ?int $sort = 1;
 

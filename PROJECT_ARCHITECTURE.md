@@ -1,4 +1,4 @@
-# PrintFlow Pro - Architecture
+# XY Cubic Shopee - Architecture
 
 ## Tech Stack
 
@@ -58,7 +58,7 @@ Permissions are defined in `config/permissions.php` and enforced via Spatie + `U
 - **Merchant:** `/dashboard`, `/uploads/*` (auth + verified)
 - **Admin:** `/admin` (Filament login, requires `access_admin_panel`)
 
-Default super admin: `admin@printflowpro.test` / `password` (seed locally only).
+Default super admin: `admin@example.com` / `password` (seed locally only).
 
 ---
 

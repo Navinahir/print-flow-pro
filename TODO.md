@@ -1,4 +1,4 @@
-# PrintFlow Pro - Phase 1 TODO
+# XY Cubic Shopee - Phase 1 TODO
 
 ## Core Setup
 - [ ] Configure multi-domain routing *(deferred)*
