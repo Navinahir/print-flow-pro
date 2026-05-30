@@ -1,0 +1,30 @@
+@layer components {
+    .merchant-spinner {
+        @apply h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-amber-600 dark:border-slate-700 dark:border-t-amber-500;
+    }
+
+    .merchant-page-loader {
+        @apply fixed inset-0 z-[100] hidden items-center justify-center bg-white/60 backdrop-blur-sm dark:bg-slate-950/60;
+    }
+
+    html.merchant-page-loading-pending .merchant-page-loader,
+    html.merchant-locale-switching-pending .merchant-page-loader {
+        @apply flex;
+    }
+
+    .merchant-page-loader__content {
+        @apply flex flex-col items-center;
+    }
+
+    .merchant-page-loader__message {
+        @apply hidden;
+    }
+
+    html.merchant-locale-switching-pending .merchant-page-loader__message--locale {
+        @apply block;
+    }
+
+    html.merchant-page-loading-pending:not(.merchant-locale-switching-pending) .merchant-page-loader__message--content {
+        @apply block;
+    }
+}

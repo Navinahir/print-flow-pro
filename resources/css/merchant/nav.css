@@ -1,0 +1,85 @@
+@layer components {
+    .merchant-nav-icon-btn {
+        @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white p-2 text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-900;
+    }
+
+    .merchant-nav-user-btn {
+        @apply inline-flex max-w-xs items-center gap-2 rounded-lg border border-slate-300 bg-white px-2 py-1.5 text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:focus:ring-offset-slate-900;
+    }
+
+    .merchant-nav-user-trigger {
+        @apply inline-flex rounded-full p-0.5 transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:hover:bg-slate-800 dark:focus:ring-offset-slate-900;
+    }
+
+    .merchant-nav-user-dropdown {
+        @apply absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .merchant-nav-user-dropdown__header {
+        @apply flex items-center gap-3 border-b border-slate-100 px-4 py-3 dark:border-slate-800;
+    }
+
+    .merchant-nav-user-dropdown__name {
+        @apply truncate text-sm font-semibold text-slate-900 dark:text-slate-100;
+    }
+
+    .merchant-nav-user-dropdown__meta {
+        @apply truncate text-xs text-slate-500 dark:text-slate-400;
+    }
+
+    .merchant-nav-user-dropdown__actions {
+        @apply py-1;
+    }
+
+    .merchant-nav-user-dropdown__item {
+        @apply flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800;
+    }
+
+    .merchant-nav-user-dropdown__item--danger {
+        @apply text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30;
+    }
+
+    .merchant-nav-user-btn__avatar {
+        @apply inline-flex h-8 w-8 items-center justify-center rounded-full bg-amber-100 text-sm font-semibold text-amber-800 dark:bg-amber-900/50 dark:text-amber-200;
+    }
+
+    .merchant-nav-dropdown {
+        @apply absolute right-0 z-50 mt-2 min-w-[10rem] overflow-hidden rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900;
+    }
+
+    .merchant-nav-dropdown--locale {
+        @apply w-max;
+    }
+
+    .merchant-nav-dropdown--align-end {
+        @apply right-0;
+    }
+
+    .merchant-nav-dropdown__meta {
+        @apply border-b border-slate-100 px-4 py-2 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400;
+    }
+
+    .merchant-nav-dropdown__item {
+        @apply block w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800;
+    }
+
+    .merchant-nav-dropdown__item--selectable {
+        @apply flex w-full items-center justify-between gap-3;
+    }
+
+    .merchant-nav-dropdown__item--selectable > span:first-child {
+        @apply whitespace-nowrap;
+    }
+
+    .merchant-nav-dropdown__check {
+        @apply h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400;
+    }
+
+    .merchant-nav-dropdown__item--active {
+        @apply bg-amber-50 font-semibold text-amber-900 dark:bg-amber-950/50 dark:text-amber-100;
+    }
+
+    .merchant-nav-dropdown__item--danger {
+        @apply text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30;
+    }
+}

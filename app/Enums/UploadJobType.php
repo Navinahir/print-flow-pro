@@ -14,10 +14,10 @@ enum UploadJobType: string
     public function label(): string
     {
         return match ($this) {
-            self::OrderPdf => 'Order PDF',
-            self::ThermalLabel => 'Thermal Label',
-            self::PickingList => 'Picking List',
-            self::DeliveryLabel => 'Delivery Label',
+            self::OrderPdf => __('merchant.uploads.types.order_pdf'),
+            self::ThermalLabel => __('merchant.uploads.types.thermal_label'),
+            self::PickingList => __('merchant.uploads.types.picking_list'),
+            self::DeliveryLabel => __('merchant.uploads.types.delivery_label'),
         };
     }
 
@@ -37,6 +37,8 @@ enum UploadJobType: string
         return match ($this) {
             self::OrderPdf, self::ThermalLabel, self::DeliveryLabel => [
                 'application/pdf',
+                'text/csv',
+                'text/plain',
             ],
             self::PickingList => [
                 'text/csv',
@@ -53,7 +55,7 @@ enum UploadJobType: string
     public function fileExtensions(): array
     {
         return match ($this) {
-            self::OrderPdf, self::ThermalLabel, self::DeliveryLabel => ['pdf'],
+            self::OrderPdf, self::ThermalLabel, self::DeliveryLabel => ['pdf', 'csv'],
             self::PickingList => ['csv', 'xlsx', 'xls'],
         };
     }

@@ -1,0 +1,63 @@
+@layer components {
+    .merchant-printing-workspace__panel {
+        @apply grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-0 lg:overflow-hidden lg:rounded-xl lg:border lg:border-slate-200 lg:bg-white lg:shadow-sm dark:lg:border-slate-700 dark:lg:bg-slate-900;
+    }
+
+    .merchant-printing-workspace__list {
+        @apply flex min-h-0 min-w-0 flex-col lg:col-span-4 lg:border-r lg:border-slate-200 dark:lg:border-slate-700;
+    }
+
+    .merchant-printing-workspace__preview {
+        @apply flex min-h-0 min-w-0 flex-col lg:col-span-8 lg:min-h-[calc(100vh-16rem)];
+    }
+
+    .merchant-printing-workspace__preview .merchant-preview-wrapper {
+        @apply flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden;
+    }
+
+    .merchant-printing-list-pane__header {
+        @apply flex h-[5.5rem] shrink-0 flex-col justify-center border-b border-slate-200 bg-slate-50/80 px-4 lg:px-5 dark:border-slate-700 dark:bg-slate-800/50;
+    }
+
+    .merchant-printing-list-pane__heading,
+    .merchant-preview-toolbar__heading {
+        @apply text-sm font-semibold leading-tight text-slate-900 dark:text-slate-100;
+    }
+
+    .merchant-printing-list-pane__description,
+    .merchant-preview-toolbar__description {
+        @apply mt-0.5 line-clamp-2 text-xs leading-snug text-slate-500 dark:text-slate-400;
+    }
+
+    .merchant-printing-list-pane__body {
+        @apply flex min-h-0 min-w-0 flex-1 flex-col;
+    }
+
+    .merchant-printing-list-pane__upload {
+        @apply shrink-0 border-b border-slate-200 bg-white px-4 py-4 lg:px-5 dark:border-slate-700 dark:bg-slate-900/40;
+    }
+
+    .merchant-printing-list-pane__scroll {
+        @apply max-h-[28rem] min-h-0 min-w-0 flex-1 overflow-y-auto p-3 lg:max-h-none lg:p-4;
+    }
+
+    .merchant-printing-list-pane__empty {
+        @apply rounded-lg border border-dashed border-slate-200 px-4 py-8 text-center text-sm text-slate-500 dark:border-slate-600 dark:text-slate-400;
+    }
+
+    .merchant-printing-module-switcher__tab {
+        @apply inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition;
+    }
+
+    .merchant-printing-module-switcher__tab--active {
+        @apply bg-amber-100 text-amber-900 ring-1 ring-amber-300 dark:bg-amber-950/50 dark:text-amber-100 dark:ring-amber-700;
+    }
+
+    .merchant-printing-module-switcher__tab--inactive {
+        @apply bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700;
+    }
+
+    .merchant-printing-module-switcher__check {
+        @apply h-3.5 w-3.5 text-amber-700 dark:text-amber-300;
+    }
+}

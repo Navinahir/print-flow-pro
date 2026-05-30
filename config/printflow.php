@@ -9,7 +9,7 @@ return [
     ],
 
     'admin' => [
-        'path' => env('PRINTFLOW_ADMIN_PATH', 'admin'),
+        'path' => env('PRINTFLOW_ADMIN_PATH', env('ADMIN_PATH_PREFIX', 'boss')),
     ],
 
     'upload' => [

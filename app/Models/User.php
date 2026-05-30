@@ -21,6 +21,7 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
+ * @property RoleEnum|null $role
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Permission> $permissions
  */
@@ -36,6 +37,8 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'role',
+        'profile_photo_path',
     ];
 
     /**
@@ -54,37 +57,51 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'role' => RoleEnum::class,
         ];
     }
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->can(PermissionEnum::AccessAdminPanel->value);
+        return $this->canAccessAdminSurface()
+            && $this->can(PermissionEnum::AccessAdminPanel->value);
     }
 
-    public function isSuperAdmin(): bool
+    public function canAccessAdminSurface(): bool
     {
-        return $this->hasRole(RoleEnum::SuperAdmin->value);
+        return $this->role?->canAccessAdminSurface() ?? false;
     }
 
-    public function isRegionalPartner(): bool
+    public function canAccessMerchantSurface(): bool
     {
-        return $this->hasRole(RoleEnum::RegionalPartner->value);
+        return $this->role?->canAccessMerchantSurface() ?? false;
+    }
+
+    public function assignPrimaryRole(RoleEnum $role): static
+    {
+        $this->forceFill(['role' => $role])->save();
+
+        $this->syncRoles([$role->value]);
+
+        return $this;
+    }
+
+    public function isStaffAdmin(): bool
+    {
+        return $this->role === RoleEnum::Admin;
     }
 
     public function isMerchant(): bool
     {
-        return $this->hasRole(RoleEnum::Merchant->value);
+        return $this->role === RoleEnum::Merchant;
     }
 
+    /**
+     * Users who can operate in the admin surface.
+     */
     public function isAdmin(): bool
     {
-        return $this->hasAnyRole(
-            array_map(
-                static fn (RoleEnum $role): string => $role->value,
-                RoleEnum::adminRoles(),
-            ),
-        );
+        return $this->canAccessAdminSurface();
     }
 
     /**

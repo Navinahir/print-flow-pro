@@ -1,0 +1,103 @@
+@layer components {
+    .merchant-sidebar {
+        @apply w-64 transition-[width] duration-200 ease-in-out;
+    }
+
+    .merchant-sidebar__brand {
+        @apply flex h-16 shrink-0 items-center border-b border-slate-200 px-6 dark:border-slate-700;
+    }
+
+    .merchant-sidebar__brand-text {
+        @apply truncate text-lg font-bold text-slate-900 dark:text-slate-100;
+    }
+
+    .merchant-sidebar__brand-link {
+        @apply flex min-w-0 items-center gap-3 truncate rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900;
+    }
+
+    .merchant-sidebar__nav {
+        @apply min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-6;
+    }
+
+    .merchant-sidebar__section-title {
+        @apply mb-2 px-3 text-xs font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500;
+    }
+
+    .merchant-sidebar-link__label {
+        @apply truncate;
+    }
+
+    .merchant-sidebar-footer {
+        @apply shrink-0 border-t border-slate-200 px-4 py-4 dark:border-slate-700;
+    }
+
+    .merchant-sidebar-footer__button {
+        @apply w-full text-left;
+    }
+
+    .merchant-sidebar-footer__title {
+        @apply mb-2;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar [data-sidebar-tooltip],
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar [data-sidebar-tooltip] {
+        @apply relative;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar [data-sidebar-tooltip]::after,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar [data-sidebar-tooltip]::after {
+        content: attr(data-sidebar-tooltip);
+        @apply pointer-events-none absolute left-[calc(100%+0.5rem)] top-1/2 z-[120] hidden -translate-y-1/2 whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-medium text-white shadow-lg dark:bg-slate-700;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar [data-sidebar-tooltip]:hover::after,
+    .merchant-layout--sidebar-collapsed .merchant-sidebar [data-sidebar-tooltip]:focus-visible::after,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar [data-sidebar-tooltip]:hover::after,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar [data-sidebar-tooltip]:focus-visible::after {
+        @apply block;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar {
+        @apply z-50 w-20 overflow-visible;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar__nav,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar__nav {
+        @apply overflow-visible;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-layout__body,
+    html.merchant-sidebar-collapsed-pending .merchant-layout__body {
+        @apply lg:pl-20;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar__brand,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar__brand {
+        @apply justify-center px-0;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar__brand-link,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar__brand-link {
+        @apply justify-center gap-0;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar-link__label,
+    .merchant-layout--sidebar-collapsed .merchant-sidebar__section-title,
+    .merchant-layout--sidebar-collapsed .merchant-sidebar__brand-text,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar-link__label,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar__section-title,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar__brand-text {
+        @apply sr-only;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar-link,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar-link {
+        @apply justify-center px-2;
+    }
+
+    .merchant-layout--sidebar-collapsed .merchant-sidebar-footer,
+    html.merchant-sidebar-collapsed-pending .merchant-sidebar-footer {
+        @apply overflow-visible px-2;
+    }
+}

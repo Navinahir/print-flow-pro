@@ -1,0 +1,169 @@
+@page {
+    size: 150mm 100mm;
+    margin: 0;
+}
+
+@media print {
+    html,
+    body.merchant-print-active {
+        width: 150mm !important;
+        height: 100mm !important;
+        min-height: 0 !important;
+        max-height: 100mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #fff !important;
+    }
+
+    body.merchant-print-active > *:not([data-print-area]) {
+        display: none !important;
+    }
+
+    body.merchant-print-active [data-print-area] {
+        display: block !important;
+        position: static !important;
+        width: 150mm !important;
+        height: 100mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #fff !important;
+        page-break-before: avoid !important;
+        page-break-after: avoid !important;
+        break-before: avoid !important;
+        break-after: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    body.merchant-print-active [data-print-area] [data-preview-container],
+    body.merchant-print-active [data-print-area] .merchant-preview-container__stage,
+    body.merchant-print-active [data-print-area] [data-preview-canvas-wrap],
+    body.merchant-print-active [data-print-area] .merchant-preview-body__print-target,
+    body.merchant-print-active [data-print-area] .merchant-preview-body__active {
+        display: block !important;
+        position: static !important;
+        width: 150mm !important;
+        height: 100mm !important;
+        min-height: 0 !important;
+        max-height: 100mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: none !important;
+        background: transparent !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    body.merchant-print-active [data-preview-canvas] {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        display: block !important;
+        transform: none !important;
+        --preview-scale: 1 !important;
+        width: 150mm !important;
+        height: 100mm !important;
+        max-width: 150mm !important;
+        max-height: 100mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    body.merchant-print-active [data-preview-surface] {
+        position: absolute !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        overflow: hidden !important;
+        background: #fff !important;
+    }
+
+    body.merchant-print-active .merchant-preview-surface__inset {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        padding: calc(var(--safe-zone-inset-mm, 5) * 1mm) !important;
+    }
+
+    body.merchant-print-active .printing-preview-content,
+    body.merchant-print-active .printing-preview-logistics,
+    body.merchant-print-active .printing-preview-order-details,
+    body.merchant-print-active .printing-preview-picking-list,
+    body.merchant-print-active .delivery-label-preview {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+        color: #0f172a !important;
+    }
+
+    body.merchant-print-active .printing-preview-order-details__meta dt,
+    body.merchant-print-active .printing-preview-order-details__table th,
+    body.merchant-print-active .printing-preview-order-details__table td,
+    body.merchant-print-active .printing-preview-order-details__summary,
+    body.merchant-print-active .printing-preview-order-details__notes,
+    body.merchant-print-active .printing-preview-logistics__meta dt,
+    body.merchant-print-active .printing-preview-logistics__recipient-address,
+    body.merchant-print-active .printing-preview-picking-list__warehouse,
+    body.merchant-print-active .printing-preview-picking-list__date,
+    body.merchant-print-active .printing-preview-picking-list__table th,
+    body.merchant-print-active .printing-preview-picking-list__table td,
+    body.merchant-print-active .printing-preview-picking-list__total,
+    body.merchant-print-active .delivery-label-preview__shipping,
+    body.merchant-print-active .delivery-label-preview__address-block,
+    body.merchant-print-active .delivery-label-preview__remarks-heading,
+    body.merchant-print-active .delivery-label-preview__remarks-body {
+        color: #334155 !important;
+    }
+
+    body.merchant-print-active .printing-preview-order-details__total,
+    body.merchant-print-active .printing-preview-order-details__number,
+    body.merchant-print-active .printing-preview-logistics__recipient-name,
+    body.merchant-print-active .printing-preview-picking-list__reference,
+    body.merchant-print-active .delivery-label-preview__recipient {
+        color: #0f172a !important;
+    }
+
+    body.merchant-print-active .printing-preview-logistics__meta,
+    body.merchant-print-active .printing-preview-order-details__meta {
+        min-width: 0 !important;
+    }
+
+    body.merchant-print-active .printing-preview-logistics__meta > div,
+    body.merchant-print-active .printing-preview-order-details__meta > div {
+        min-width: 0 !important;
+        overflow-wrap: anywhere !important;
+    }
+
+    body.merchant-print-active [data-preview-safe-zone],
+    body.merchant-print-active .merchant-preview-toolbar,
+    body.merchant-print-active .merchant-preview-loading-overlay,
+    body.merchant-print-active .merchant-preview-aspect-warning,
+    body.merchant-print-active .merchant-preview-container__size-hint,
+    body.merchant-print-active .merchant-preview-container__footer,
+    body.merchant-print-active .merchant-preview-container__dimensions {
+        display: none !important;
+    }
+}
+
+@media screen {
+    [data-print-area] {
+        @apply flex min-h-0 w-full flex-1 flex-col;
+    }
+}

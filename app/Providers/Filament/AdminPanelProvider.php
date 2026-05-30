@@ -7,6 +7,14 @@ namespace App\Providers\Filament;
 use App\Filament\NavigationGroup;
 use App\Filament\Widgets\PlatformStatsWidget;
 use App\Filament\Widgets\RecentAuditLogsWidget;
+use App\Http\Middleware\ConfigureDomainSession;
+use App\Http\Middleware\EnsureAdminAccess;
+use App\Http\Middleware\EnsureExpectedSurface;
+use App\Http\Middleware\ObfuscateAdminAccess;
+use App\Http\Middleware\RejectUnmappedDomain;
+use App\Http\Middleware\ResolveRegion;
+use App\Support\Domains\DomainContext;
+use App\Support\Domains\DomainResolver;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -30,10 +38,24 @@ class AdminPanelProvider extends PanelProvider
     {
         $brandName = config('printflow.brand.name', 'XY Cubic Shopee');
 
-        return $panel
+        $adminDomain = (string) config('domains.admin.domain');
+        $adminPath = config('domains.admin.path_prefix', config('printflow.admin.path', 'boss'));
+        $resolver = $this->app->make(DomainResolver::class);
+
+        $panel = $panel
             ->default()
             ->id('admin')
-            ->path(config('printflow.admin.path', 'bosslogin'))
+            ->path($adminPath);
+
+        if (
+            config('domains.routing_enabled', true)
+            && filled($adminDomain)
+            && ! $resolver->usesPortBasedLocalHost($adminDomain)
+        ) {
+            $panel = $panel->domain($adminDomain);
+        }
+
+        return $panel
             ->login()
             ->authGuard('web')
             ->brandName($brandName)
@@ -61,6 +83,11 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
             ])
             ->middleware([
+                ResolveRegion::class,
+                ConfigureDomainSession::class,
+                RejectUnmappedDomain::class,
+                EnsureExpectedSurface::class.':'.DomainContext::SURFACE_ADMIN,
+                ObfuscateAdminAccess::class,
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
                 StartSession::class,
@@ -73,6 +100,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureAdminAccess::class,
             ])
             ->sidebarCollapsibleOnDesktop();
     }

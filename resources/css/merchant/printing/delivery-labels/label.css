@@ -1,0 +1,45 @@
+@layer components {
+    .delivery-label-preview {
+        @apply flex min-h-0 flex-col text-slate-900 dark:text-slate-100;
+    }
+
+    .delivery-label-preview__header {
+        @apply mb-2 shrink-0;
+    }
+
+    .delivery-label-preview__recipient {
+        @apply text-base font-bold leading-tight text-slate-900 dark:text-slate-100;
+    }
+
+    .delivery-label-preview__shipping {
+        @apply mt-1 text-[10px] font-medium text-slate-600 dark:text-slate-300;
+    }
+
+    .delivery-label-preview__shrink-hint {
+        @apply mt-1 text-[10px] font-medium uppercase tracking-wide text-amber-700 dark:text-amber-300;
+    }
+
+    .delivery-label-preview__address-block {
+        @apply shrink-0 leading-snug text-slate-800 dark:text-slate-200;
+    }
+
+    .delivery-label-preview__address-line {
+        @apply break-words;
+    }
+
+    .delivery-label-preview__spacer {
+        @apply min-h-2 flex-1;
+    }
+
+    .delivery-label-preview__remarks {
+        @apply mt-auto shrink-0 border-t border-slate-200 pt-2 dark:border-slate-600;
+    }
+
+    .delivery-label-preview__remarks-heading {
+        @apply text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400;
+    }
+
+    .delivery-label-preview__remarks-body {
+        @apply mt-1 text-xs leading-snug text-slate-700 dark:text-slate-300;
+    }
+}

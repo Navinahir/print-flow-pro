@@ -10,19 +10,36 @@ use Illuminate\Database\Seeder;
 
 class AdminUserSeeder extends Seeder
 {
-    public const ADMIN_EMAIL = 'admin@example.com';
+    public const ADMIN_DEMO_EMAIL = 'admin@example.com';
+
+    public const MERCHANT_DEMO_EMAIL = 'merchant@example.com';
+
+    public const DEFAULT_PASSWORD = 'password';
 
     public function run(): void
     {
         $admin = User::query()->updateOrCreate(
-            ['email' => self::ADMIN_EMAIL],
+            ['email' => self::ADMIN_DEMO_EMAIL],
             [
-                'name' => 'Super Admin',
-                'password' => 'password',
+                'name' => 'Admin Staff',
+                'password' => self::DEFAULT_PASSWORD,
                 'email_verified_at' => now(),
             ],
         );
+        $admin->assignPrimaryRole(RoleEnum::Admin);
 
-        $admin->syncRoles([RoleEnum::SuperAdmin->value]);
+        $merchant = User::query()->updateOrCreate(
+            ['email' => self::MERCHANT_DEMO_EMAIL],
+            [
+                'name' => 'Demo Merchant',
+                'password' => self::DEFAULT_PASSWORD,
+                'email_verified_at' => now(),
+            ],
+        );
+        $merchant->assignPrimaryRole(RoleEnum::Merchant);
+
+        echo '✓ Seeded users (password: '.self::DEFAULT_PASSWORD."):\n";
+        echo '  - admin (admin surface only): '.self::ADMIN_DEMO_EMAIL."\n";
+        echo '  - merchant (merchant surface only): '.self::MERCHANT_DEMO_EMAIL."\n";
     }
 }

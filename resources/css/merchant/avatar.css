@@ -1,0 +1,73 @@
+@layer components {
+    .merchant-user-avatar {
+        @apply relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-amber-100 font-semibold text-amber-800 dark:border-slate-600 dark:bg-amber-900/60 dark:text-amber-200;
+    }
+
+    .merchant-user-avatar[data-has-photo='true'] {
+        @apply bg-white dark:bg-slate-900;
+    }
+
+    .merchant-user-avatar__image {
+        @apply relative z-[1] h-full w-full object-cover;
+    }
+
+    .merchant-user-avatar__initials {
+        @apply select-none leading-none;
+    }
+
+    .merchant-user-avatar--xs {
+        @apply h-6 w-6 text-[10px];
+    }
+
+    .merchant-user-avatar--sm {
+        @apply h-8 w-8 text-xs;
+    }
+
+    .merchant-user-avatar--md {
+        @apply h-10 w-10 text-sm;
+    }
+
+    .merchant-user-avatar--lg {
+        @apply h-16 w-16 text-lg;
+    }
+
+    .merchant-user-avatar--xl {
+        @apply h-24 w-24 text-2xl;
+    }
+
+    .merchant-user-avatar--sidebar {
+        @apply h-5 w-5 border-0 text-[9px];
+    }
+
+    .merchant-brand-mark {
+        @apply relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-300 bg-amber-100 font-bold text-amber-800 dark:border-slate-600 dark:bg-amber-900/60 dark:text-amber-200;
+    }
+
+    .merchant-brand-mark[data-has-logo='true'] {
+        @apply bg-white dark:bg-slate-900;
+    }
+
+    .merchant-brand-mark__image {
+        @apply relative z-[1] h-full w-full object-cover;
+    }
+
+    .merchant-brand-mark__initials {
+        @apply select-none leading-none tracking-tight;
+    }
+
+    .merchant-brand-mark--xs {
+        @apply h-6 w-6 text-[10px];
+    }
+
+    .merchant-brand-mark--sm {
+        @apply h-8 w-8 text-xs;
+    }
+
+    .merchant-brand-mark--md {
+        @apply h-10 w-10 text-sm;
+    }
+
+    .merchant-brand-mark--lg {
+        @apply h-12 w-12 text-base;
+    }
+}

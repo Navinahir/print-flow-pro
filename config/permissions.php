@@ -57,13 +57,14 @@ return [
     | Role → permission assignments
     |--------------------------------------------------------------------------
     |
-    | Use "all" to grant every permission in groups (super_admin only).
+    | Two roles only: admin and merchant.
+    | Surface access (which host) is enforced via users.role + middleware.
+    | Keep this lightweight for milestone scope.
     |
     */
 
     'role_permissions' => [
-        'super_admin' => 'all',
-        'regional_partner' => [
+        'admin' => [
             'access_admin_panel',
             'merchants.view',
             'merchants.manage',

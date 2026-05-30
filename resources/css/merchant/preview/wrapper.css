@@ -1,0 +1,34 @@
+@layer components {
+    .merchant-preview-wrapper {
+        @apply flex min-h-0 flex-1 flex-col overflow-hidden;
+    }
+
+    .merchant-preview-body {
+        @apply relative flex min-h-0 flex-1 flex-col bg-slate-50;
+        background-image:
+            radial-gradient(circle at 1px 1px, rgb(203 213 225 / 0.45) 1px, transparent 0);
+        background-size: 16px 16px;
+    }
+
+    .dark .merchant-preview-body {
+        @apply bg-slate-950/60;
+        background-image:
+            radial-gradient(circle at 1px 1px, rgb(71 85 105 / 0.35) 1px, transparent 0);
+    }
+
+    .merchant-preview-body__content {
+        @apply relative flex min-h-0 w-full flex-1 flex-col;
+    }
+
+    .merchant-preview-body__active {
+        @apply flex min-h-0 w-full flex-1 flex-col;
+    }
+
+    .merchant-preview-body__print-target {
+        @apply flex min-h-0 w-full flex-1 flex-col;
+    }
+
+    .merchant-preview-loading-overlay {
+        @apply absolute inset-0 z-10 flex items-center justify-center bg-slate-50/80 backdrop-blur-[1px] dark:bg-slate-950/70;
+    }
+}

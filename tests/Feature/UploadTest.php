@@ -30,7 +30,7 @@ class UploadTest extends TestCase
     public function test_merchant_can_upload_pdf(): void
     {
         $user = User::factory()->create(['email_verified_at' => now()]);
-        $user->assignRole(RoleEnum::Merchant->value);
+        $user->assignPrimaryRole(RoleEnum::Merchant);
         Merchant::query()->create([
             'user_id' => $user->id,
             'name' => 'Test Shop',

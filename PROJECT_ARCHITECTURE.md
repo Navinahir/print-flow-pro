@@ -25,15 +25,15 @@ Shopee sellers upload thermal labels, order PDFs, and picking lists. The platfor
 
 ---
 
-# User Roles & Access
+# User Roles & Access (V2.4)
 
-| Role | Breeze (`/dashboard`) | Uploads | Filament (`/admin`) |
-| --- | --- | --- | --- |
-| `merchant` | Yes | Own merchant only | No |
-| `regional_partner` | Optional | Admin view (foundation) | Yes (subset permissions) |
-| `super_admin` | Optional | All | Yes (full) |
+| Role | Merchant portal | Admin dashboard (`/boss`) |
+| --- | --- | --- |
+| `merchant` | Yes | No |
+| `admin` | No | Yes (subset Spatie permissions) |
 
-Permissions are defined in `config/permissions.php` and enforced via Spatie + `UploadJobPolicy` + Filament resource authorization.
+Surface access: `users.role` + `EnsureMerchantAccess` / `EnsureAdminAccess`.  
+In-panel actions: Spatie permissions from `config/permissions.php` + `UploadJobPolicy` + Filament resources.
 
 ---
 

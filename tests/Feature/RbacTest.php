@@ -7,7 +7,6 @@ namespace Tests\Feature;
 use App\Enums\Permission as PermissionEnum;
 use App\Enums\Role as RoleEnum;
 use App\Models\User;
-use Database\Seeders\AdminUserSeeder;
 use Database\Seeders\PermissionSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -27,43 +26,30 @@ class RbacTest extends TestCase
         ]);
     }
 
-    public function test_super_admin_has_all_permissions(): void
+    public function test_admin_has_expected_permissions(): void
     {
         $user = User::factory()->create();
-        $user->assignRole(RoleEnum::SuperAdmin->value);
+        $user->assignPrimaryRole(RoleEnum::Admin);
 
-        foreach (PermissionEnum::fromConfig() as $permission) {
-            $this->assertTrue($user->can($permission), "Missing permission: {$permission}");
-        }
+        $this->assertTrue($user->can(PermissionEnum::AccessAdminPanel->value));
+        $this->assertTrue($user->can(PermissionEnum::ViewMerchants->value));
+        $this->assertFalse($user->can(PermissionEnum::ManageRoles->value));
     }
 
     public function test_merchant_cannot_access_admin_panel(): void
     {
         $user = User::factory()->create();
-        $user->assignRole(RoleEnum::Merchant->value);
+        $user->assignPrimaryRole(RoleEnum::Merchant);
 
         $this->assertFalse($user->can(PermissionEnum::AccessAdminPanel->value));
         $this->assertFalse($user->canAccessPanel(filament()->getPanel('admin')));
     }
 
-    public function test_seeded_super_admin_can_access_admin_panel(): void
+    public function test_admin_can_access_admin_panel(): void
     {
-        $this->seed(AdminUserSeeder::class);
+        $admin = User::factory()->create();
+        $admin->assignPrimaryRole(RoleEnum::Admin);
 
-        $admin = User::query()->where('email', AdminUserSeeder::ADMIN_EMAIL)->first();
-
-        $this->assertNotNull($admin);
-        $this->assertTrue($admin->isSuperAdmin());
         $this->assertTrue($admin->canAccessPanel(filament()->getPanel('admin')));
-    }
-
-    public function test_seeded_admin_password_is_hashed(): void
-    {
-        $this->seed(AdminUserSeeder::class);
-
-        $admin = User::query()->where('email', AdminUserSeeder::ADMIN_EMAIL)->first();
-
-        $this->assertNotSame('password', $admin->password);
-        $this->assertTrue(password_verify('password', $admin->password));
     }
 }

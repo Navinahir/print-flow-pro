@@ -1,0 +1,9 @@
+@layer components {
+    .merchant-preview-safe-zone {
+        @apply pointer-events-none absolute z-10 box-border border border-dashed border-amber-500/80;
+        top: calc(var(--safe-zone-inset-mm) / var(--preview-height-mm) * 100%);
+        right: calc(var(--safe-zone-inset-mm) / var(--preview-width-mm) * 100%);
+        bottom: calc(var(--safe-zone-inset-mm) / var(--preview-height-mm) * 100%);
+        left: calc(var(--safe-zone-inset-mm) / var(--preview-width-mm) * 100%);
+    }
+}
