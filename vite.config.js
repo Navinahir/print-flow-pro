@@ -11,6 +11,9 @@ export default defineConfig({
                 'resources/js/merchant.js',
                 'resources/css/merchant-delivery-labels.css',
                 'resources/js/merchant-delivery-labels.js',
+                'resources/js/merchant-auth.js',
+                'resources/css/marketing.css',
+                'resources/js/marketing.js'
             ],
             refresh: true,
         }),

@@ -38,7 +38,9 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'password',
         'role',
+        'locale',
         'profile_photo_path',
+        'email_verified_at',
     ];
 
     /**
@@ -110,6 +112,14 @@ class User extends Authenticatable implements FilamentUser
     public function merchant(): HasOne
     {
         return $this->hasOne(Merchant::class);
+    }
+
+    /**
+     * @return HasMany<Merchant, $this>
+     */
+    public function createdMerchants(): HasMany
+    {
+        return $this->hasMany(Merchant::class, 'created_by');
     }
 
     /**

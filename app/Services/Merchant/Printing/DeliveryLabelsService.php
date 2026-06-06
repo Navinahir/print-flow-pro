@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace App\Services\Merchant\Printing;
 
 use App\DTOs\Merchant\Printing\DeliveryLabels\DeliveryLabelListItemData;
+use App\DTOs\Merchant\Printing\DeliveryLabels\DeliveryLabelsWorkspaceViewData;
 use App\Enums\PrintingModule;
+use App\Enums\UploadJobType;
 use App\Models\DeliveryLabel;
 use App\Models\User;
 use App\Services\Merchant\Printing\DeliveryLabels\DeliveryLabelCsvImportService;
@@ -16,6 +18,7 @@ class DeliveryLabelsService extends PrintingModuleService
     public function __construct(
         private readonly DeliveryLabelPreviewService $previewService,
         private readonly DeliveryLabelCsvImportService $csvImportService,
+        private readonly UploadJobListMapper $uploadJobListMapper,
     ) {}
 
     public function module(): PrintingModule
@@ -23,12 +26,12 @@ class DeliveryLabelsService extends PrintingModuleService
         return PrintingModule::DeliveryLabels;
     }
 
-    public function buildDeliveryWorkspace(User $user): \App\DTOs\Merchant\Printing\DeliveryLabels\DeliveryLabelsWorkspaceViewData
+    public function buildDeliveryWorkspace(User $user): DeliveryLabelsWorkspaceViewData
     {
         $module = $this->module();
         $key = $module->translationKey();
 
-        return new \App\DTOs\Merchant\Printing\DeliveryLabels\DeliveryLabelsWorkspaceViewData(
+        return new DeliveryLabelsWorkspaceViewData(
             module: $module,
             title: (string) __($key.'.title'),
             subtitle: (string) __($key.'.subtitle'),
@@ -55,6 +58,36 @@ class DeliveryLabelsService extends PrintingModuleService
             ->get();
 
         if ($labels->isEmpty()) {
+            $uploadJobs = $this->uploadJobListMapper->jobsFor($user, UploadJobType::DeliveryLabel);
+
+            if ($uploadJobs->isNotEmpty()) {
+                $items = [];
+
+                foreach ($uploadJobs as $job) {
+                    $originalName = (string) ($job->metadata['original_names'][0] ?? "#{$job->id}");
+
+                    $items[] = new DeliveryLabelListItemData(
+                        id: 'upload-job-'.$job->id,
+                        title: $originalName,
+                        subtitle: (string) __('merchant.printing.upload_job_subtitle', [
+                            'id' => $job->id,
+                            'status' => $job->status?->label() ?? '',
+                            'date' => $job->created_at?->format('M j, Y H:i') ?? '',
+                        ]),
+                        status: $job->status?->value ?? 'pending',
+                        width: 1500,
+                        height: 1000,
+                        preview: $this->previewService->buildPreview(
+                            recipientName: $originalName,
+                            courierAddress: (string) __('merchant.delivery_labels.upload_placeholder_address'),
+                            remarks: (string) __('merchant.printing.upload_job_remarks', ['id' => $job->id]),
+                        ),
+                    );
+                }
+
+                return $items;
+            }
+
             return $this->sampleDeliveryLabels();
         }
 

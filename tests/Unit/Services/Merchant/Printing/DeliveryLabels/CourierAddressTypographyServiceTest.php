@@ -64,4 +64,23 @@ class CourierAddressTypographyServiceTest extends TestCase
         $this->assertSame('Tracking Number', $columns['tracking']);
         $this->assertSame('Carrier', $columns['carrier']);
     }
+
+    public function test_csv_header_detector_finds_chinese_columns(): void
+    {
+        $detector = new CourierCsvHeaderDetector;
+
+        $columns = $detector->detectColumns([
+            '收件人',
+            '地址',
+            '備註',
+            '追蹤號碼',
+            '物流商',
+        ]);
+
+        $this->assertSame('收件人', $columns['recipient']);
+        $this->assertSame('地址', $columns['address']);
+        $this->assertSame('備註', $columns['remarks']);
+        $this->assertSame('追蹤號碼', $columns['tracking']);
+        $this->assertSame('物流商', $columns['carrier']);
+    }
 }

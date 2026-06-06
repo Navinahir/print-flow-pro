@@ -33,6 +33,42 @@
             @endif
         </div>
 
+        @if (\App\Support\MerchantConfig::feature('uploads'))
+            <div class="grid gap-4 sm:grid-cols-3">
+                <div class="merchant-card text-center">
+                    <p class="text-2xl font-bold text-slate-900 dark:text-slate-100">{{ $stats->totalUploads }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __('merchant.dashboard.stats.total_uploads') }}</p>
+                </div>
+                <div class="merchant-card text-center">
+                    <p class="text-2xl font-bold text-amber-700 dark:text-amber-400">{{ $stats->pendingJobs }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __('merchant.dashboard.stats.pending_jobs') }}</p>
+                </div>
+                <div class="merchant-card text-center">
+                    <p class="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{{ $stats->completedJobs }}</p>
+                    <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ __('merchant.dashboard.stats.completed_jobs') }}</p>
+                </div>
+            </div>
+
+            @if ($stats->recentJobs->isNotEmpty())
+                <div class="merchant-card">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">{{ __('merchant.dashboard.stats.recent_uploads') }}</h2>
+                    <ul class="mt-4 divide-y divide-slate-200 dark:divide-slate-700">
+                        @foreach ($stats->recentJobs as $job)
+                            <li class="flex items-center justify-between gap-3 py-3">
+                                <div class="min-w-0">
+                                    <p class="truncate font-medium text-slate-900 dark:text-slate-100">#{{ $job->id }} · {{ $job->type?->label() }}</p>
+                                    <p class="text-xs text-slate-500">{{ $job->created_at?->format('M j, Y H:i') }}</p>
+                                </div>
+                                <a href="{{ route('uploads.show', $job) }}" class="shrink-0 text-sm font-medium text-amber-700 hover:text-amber-600">
+                                    {{ __('merchant.uploads.table.view') }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+        @endif
+
         <div class="grid gap-6 sm:grid-cols-2">
             @can('create', \App\Models\UploadJob::class)
                 @if (\App\Support\MerchantConfig::feature('uploads'))

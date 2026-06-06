@@ -9,7 +9,6 @@ declare(strict_types=1);
  * Merchant domain settings (hosts, locales, branding, features) are stored in the
  * database and loaded via DomainConfigurationService.
  */
-
 $environment = env('APP_ENV', 'production');
 
 $localDefaults = [
@@ -99,16 +98,22 @@ return [
 
     'routing_enabled' => filter_var(env('DOMAIN_ROUTING_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
 
+    /*
+    | When true, marketing/admin routes skip Route::domain() so artisan serve :8000 works.
+    | Must stay false in production — otherwise /tw is exposed on every host.
+    */
+    'port_routing' => filter_var(env('DOMAIN_PORT_ROUTING', false), FILTER_VALIDATE_BOOLEAN),
+
     'environment' => $environment,
 
     /*
     |--------------------------------------------------------------------------
-    | Marketing (public site — env-driven)
+    | Marketing (public site — APP_ENV defaults; runtime host from DB)
     |--------------------------------------------------------------------------
     */
 
     'marketing' => [
-        'domain' => env('MARKETING_DOMAIN', $defaults['marketing']),
+        'domain' => $defaults['marketing'],
         'locale_prefixes' => [
             'tw' => 'zh-TW',
         ],
@@ -117,13 +122,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Management dashboard (Filament — env-driven, admin domain unchanged)
+    | Management dashboard (Filament — APP_ENV defaults; path_prefix also in DB)
     |--------------------------------------------------------------------------
     */
 
     'admin' => [
-        'domain' => env('ADMIN_DOMAIN', $defaults['admin']),
-        'path_prefix' => env('ADMIN_PATH_PREFIX', env('PRINTFLOW_ADMIN_PATH', 'boss')),
+        'domain' => $defaults['admin'],
+        'path_prefix' => 'boss',
         'session_cookie' => env('SESSION_COOKIE_ADMIN', 'xycubic-admin-session'),
         'blocked_paths' => ['admin', 'login', 'register', 'dashboard', 'uploads'],
     ],
@@ -140,6 +145,26 @@ return [
     */
 
     'fallback_merchants' => $fallbackMerchantRegions,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Marketing / admin fallback (seeded into domain_settings; env optional)
+    |--------------------------------------------------------------------------
+    */
+
+    'fallback_infrastructure' => [
+        'marketing' => [
+            'host' => $defaults['marketing'],
+            'country_code' => '--',
+            'session_cookie' => 'xycubic-marketing-session',
+        ],
+        'admin' => [
+            'host' => $defaults['admin'],
+            'country_code' => '--',
+            'session_cookie' => 'xycubic-admin-session',
+            'path_prefix' => 'boss',
+        ],
+    ],
 
     'fallback_brand' => [
         'name' => 'XY Cubic Shopee',

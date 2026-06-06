@@ -17,6 +17,8 @@ class DomainConfigurationService
 {
     private const CACHE_KEY = 'domain_configuration.merchant_regions';
 
+    private const CACHE_KEY_INFRASTRUCTURE = 'domain_configuration.infrastructure';
+
     private ?MerchantDomainConfig $current = null;
 
     public function __construct(
@@ -34,9 +36,6 @@ class DomainConfigurationService
         return $this->current;
     }
 
-    /**
-     * @return mixed
-     */
     public function get(?string $key = null, mixed $default = null): mixed
     {
         $config = $this->current ?? $this->resolveCurrentFromApplicationConfig();
@@ -140,6 +139,117 @@ class DomainConfigurationService
     public function forgetCache(): void
     {
         $this->cache->forget(self::CACHE_KEY);
+        $this->cache->forget(self::CACHE_KEY_INFRASTRUCTURE);
+    }
+
+    public function syncInfrastructureToConfig(): void
+    {
+        config([
+            'domains.marketing.domain' => $this->effectiveMarketingHost(),
+            'domains.admin.domain' => $this->effectiveAdminHost(),
+            'domains.admin.path_prefix' => $this->adminPathPrefix(),
+        ]);
+    }
+
+    public function effectiveMarketingHost(): string
+    {
+        return $this->infrastructureHost(DomainSetting::SURFACE_MARKETING, 'marketing');
+    }
+
+    public function effectiveAdminHost(): string
+    {
+        return $this->infrastructureHost(DomainSetting::SURFACE_ADMIN, 'admin');
+    }
+
+    public function adminPathPrefix(): string
+    {
+        $prefix = $this->rememberInfrastructure()['admin']['path_prefix'] ?? null;
+
+        if (is_string($prefix) && $prefix !== '') {
+            return trim($prefix, '/');
+        }
+
+        return trim((string) config('domains.admin.path_prefix', 'boss'), '/');
+    }
+
+    /**
+     * @return array<string, array{host: string, session_cookie: string, path_prefix?: string}>
+     */
+    public function infrastructureForDisplay(): array
+    {
+        return $this->rememberInfrastructure();
+    }
+
+    private function infrastructureHost(string $surface, string $fallbackKey): string
+    {
+        $host = $this->rememberInfrastructure()[$fallbackKey]['host'] ?? '';
+
+        if ($host !== '') {
+            return $host;
+        }
+
+        return match ($surface) {
+            DomainSetting::SURFACE_MARKETING => (string) config('domains.marketing.domain', ''),
+            DomainSetting::SURFACE_ADMIN => (string) config('domains.admin.domain', ''),
+            default => '',
+        };
+    }
+
+    /**
+     * @return array<string, array{host: string, session_cookie: string, path_prefix?: string}>
+     */
+    private function rememberInfrastructure(): array
+    {
+        /** @var array<string, array{host: string, session_cookie: string, path_prefix?: string}> $infrastructure */
+        $infrastructure = $this->cache->rememberForever(self::CACHE_KEY_INFRASTRUCTURE, function (): array {
+            if (! $this->databaseReady()) {
+                return $this->fallbackInfrastructure();
+            }
+
+            $settings = $this->repository->allInfrastructureSettings();
+
+            if ($settings->isEmpty()) {
+                return $this->fallbackInfrastructure();
+            }
+
+            $mapped = [];
+
+            foreach ($settings as $setting) {
+                $key = $setting->surface;
+                $mapped[$key] = [
+                    'host' => $setting->host,
+                    'session_cookie' => (string) ($setting->session_cookie ?? ''),
+                ];
+
+                if ($setting->surface === DomainSetting::SURFACE_ADMIN) {
+                    $mapped[$key]['path_prefix'] = (string) ($setting->settings['path_prefix'] ?? config('domains.admin.path_prefix', 'boss'));
+                }
+            }
+
+            return array_replace($this->fallbackInfrastructure(), $mapped);
+        });
+
+        return $infrastructure;
+    }
+
+    /**
+     * @return array<string, array{host: string, session_cookie: string, path_prefix?: string}>
+     */
+    private function fallbackInfrastructure(): array
+    {
+        $fallback = config('domains.fallback_infrastructure', []);
+
+        return [
+            'marketing' => [
+                'host' => (string) ($fallback['marketing']['host'] ?? config('domains.marketing.domain', '')),
+                'session_cookie' => (string) ($fallback['marketing']['session_cookie'] ?? config('domains.marketing.session_cookie', '')),
+            ],
+            'admin' => [
+                'host' => (string) ($fallback['admin']['host'] ?? config('domains.admin.domain', '')),
+                'session_cookie' => (string) ($fallback['admin']['session_cookie'] ?? config('domains.admin.session_cookie', '')),
+                'path_prefix' => trim((string) ($fallback['admin']['path_prefix'] ?? config('domains.admin.path_prefix', 'boss')), '/'),
+            ],
+        ];
     }
 
     /**

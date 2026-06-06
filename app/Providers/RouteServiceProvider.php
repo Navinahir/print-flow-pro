@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Http\Controllers\RootController;
-use App\Services\Domain\DomainConfigurationService;
 use App\Support\Domains\DomainContext;
 use App\Support\Domains\DomainResolver;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\HttpFoundation\Response;
 
 class RouteServiceProvider extends ServiceProvider
 {
@@ -42,7 +40,7 @@ class RouteServiceProvider extends ServiceProvider
 
             $this->registerRootRoute();
             $this->registerMarketingRoutes($resolver);
-            $this->registerMerchantRoutes($resolver);
+            $this->registerMerchantRoutes();
             $this->registerAdminRoutes($resolver);
         });
     }
@@ -68,53 +66,12 @@ class RouteServiceProvider extends ServiceProvider
         );
     }
 
-    private function registerMerchantRoutes(DomainResolver $resolver): void
+    private function registerMerchantRoutes(): void
     {
-        $definitions = $resolver->merchantRouteDefinitions();
-        $routingEnabled = (bool) config('domains.routing_enabled', true);
-        $primaryRegionKey = $this->primaryMerchantRegionKey();
-
-        if (! $routingEnabled) {
-            Route::middleware(self::MERCHANT_MIDDLEWARE)
-                ->group(base_path('routes/merchant.php'));
-
-            return;
-        }
-
-        if ($this->isPortBasedLocalRouting($resolver)) {
-            Route::middleware(self::MERCHANT_MIDDLEWARE)
-                ->group(base_path('routes/merchant.php'));
-
-            return;
-        }
-
-        foreach ($definitions as $definition) {
-            $domain = $definition['domain'];
-
-            if ($domain === null) {
-                continue;
-            }
-
-            $regionKey = $definition['region_key'];
-            $regions = $this->app->make(DomainConfigurationService::class)->merchantRegionsForRouting();
-            $region = $regions[$regionKey] ?? [];
-            $isActive = (bool) ($region['active'] ?? false);
-            $isPrimary = $regionKey === $primaryRegionKey;
-
-            Route::domain($domain)
-                ->middleware(self::MERCHANT_MIDDLEWARE)
-                ->group(function () use ($isPrimary, $isActive): void {
-                    if ($isPrimary && $isActive) {
-                        require base_path('routes/merchant.php');
-
-                        return;
-                    }
-
-                    Route::any('/{path?}', function () {
-                        abort(Response::HTTP_FORBIDDEN, __('merchant.errors.region_inactive'));
-                    })->where('path', '.*');
-                });
-        }
+        // Host → region is resolved in ResolveRegion. EnsureExpectedSurface and
+        // EnsureRegionIsActive enforce surface/region access without per-domain route copies.
+        Route::middleware(self::MERCHANT_MIDDLEWARE)
+            ->group(base_path('routes/merchant.php'));
     }
 
     private function registerAdminRoutes(DomainResolver $resolver): void
@@ -154,15 +111,5 @@ class RouteServiceProvider extends ServiceProvider
         }
 
         $group->group($routes);
-    }
-
-    private function primaryMerchantRegionKey(): string
-    {
-        return $this->app->make(DomainConfigurationService::class)->primaryActiveRegionKey();
-    }
-
-    private function isPortBasedLocalRouting(DomainResolver $resolver): bool
-    {
-        return $resolver->usesPortBasedLocalHost((string) config('domains.marketing.domain'));
     }
 }

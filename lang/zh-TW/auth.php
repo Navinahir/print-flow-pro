@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 return [
 
+    'failed' => '帳號或密碼不正確。',
+    'password' => '密碼不正確。',
+    'throttle' => '登入嘗試次數過多，請於 :seconds 秒後再試。',
+
     'login' => [
         'title' => '歡迎回來',
         'subtitle' => '登入以管理上傳與列印工作流程。',

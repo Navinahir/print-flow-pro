@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Responses\AdminUnauthorizedResponse;
+use App\Http\Responses\MerchantUnauthorizedResponse;
 use App\Support\Domains\DomainContext;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class RootController
 {
-    public function __invoke(Request $request): View|RedirectResponse
+    public function __invoke(Request $request): View|RedirectResponse|HttpResponse
     {
         if (! config('domains.routing_enabled', true)) {
             return view('home');
@@ -21,19 +23,24 @@ class RootController
         $context = app(DomainContext::class);
 
         if ($context->isMarketing()) {
-            return view('home');
+            $cookieName = (string) config('marketing.locale_cookie', 'xycubic-marketing-locale');
+            $locale = $request->cookie($cookieName);
+
+            if ($locale === 'en') {
+                return redirect('/en');
+            }
+
+            return redirect('/tw');
         }
 
         if ($context->isAdmin()) {
-            $prefix = trim((string) config('domains.admin.path_prefix', 'boss'), '/');
-
-            return redirect("/{$prefix}");
+            return AdminUnauthorizedResponse::make($request);
         }
 
         if ($context->isMerchant()) {
-            return redirect()->route('dashboard');
+            return MerchantUnauthorizedResponse::make($request);
         }
 
-        abort(Response::HTTP_NOT_FOUND);
+        abort(HttpResponse::HTTP_NOT_FOUND);
     }
 }

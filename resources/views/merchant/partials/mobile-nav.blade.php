@@ -41,28 +41,19 @@
         @endauth
 
         <nav class="space-y-2 text-sm font-medium" aria-label="{{ __('merchant.nav.open_menu') }}">
-            <a href="{{ route('dashboard') }}" class="block rounded-lg px-3 py-2 text-slate-700 hover:bg-amber-50 dark:text-slate-200 dark:hover:bg-amber-950/30" x-on:click="closeMobileNav()">
-                {{ __('merchant.nav.dashboard') }}
-            </a>
-            @if (\App\Support\MerchantConfig::feature('uploads'))
-                <a href="{{ route('uploads.index') }}" class="block rounded-lg px-3 py-2 text-slate-700 hover:bg-amber-50" x-on:click="closeMobileNav()">
-                    {{ __('merchant.nav.uploads') }}
-                </a>
-            @endif
             @php
-                use App\Support\Merchant\PrintingNavigation;
-                $mobilePrintingNav = PrintingNavigation::items(request()->route()?->getName());
+                use App\Support\Merchant\NavigationBuilder;
+                $mobileLinks = NavigationBuilder::mobileLinks(request()->route()?->getName());
             @endphp
-            @foreach ($mobilePrintingNav as $item)
-                <a href="{{ route($item['module']->routeName()) }}" class="block rounded-lg px-3 py-2 text-slate-700 hover:bg-amber-50 dark:text-slate-200 dark:hover:bg-amber-950/30" x-on:click="closeMobileNav()">
-                    {{ $item['label'] }}
+            @foreach ($mobileLinks as $link)
+                <a
+                    href="{{ $link['route'] }}"
+                    class="block rounded-lg px-3 py-2 text-slate-700 hover:bg-amber-50 dark:text-slate-200 dark:hover:bg-amber-950/30 {{ $link['active'] ? 'bg-amber-50 dark:bg-amber-950/30' : '' }}"
+                    x-on:click="closeMobileNav()"
+                >
+                    {{ $link['label'] }}
                 </a>
             @endforeach
-            @if (\App\Support\MerchantConfig::feature('uploads'))
-                <a href="{{ route('uploads.create') }}" class="block rounded-lg px-3 py-2 text-slate-700 hover:bg-amber-50 dark:text-slate-200 dark:hover:bg-amber-950/30" x-on:click="closeMobileNav()">
-                    {{ __('merchant.nav.new_upload') }}
-                </a>
-            @endif
         </nav>
     </div>
 </div>

@@ -4,10 +4,13 @@ use App\Http\Middleware\ConfigureDomainSession;
 use App\Http\Middleware\EnsureAdminAccess;
 use App\Http\Middleware\EnsureExpectedSurface;
 use App\Http\Middleware\EnsureMerchantAccess;
+use App\Http\Middleware\EnsurePrintingModuleEnabled;
 use App\Http\Middleware\EnsureRegionIsActive;
 use App\Http\Middleware\ObfuscateAdminAccess;
+use App\Http\Middleware\RedirectMarketingPathsOnNonMarketingHosts;
 use App\Http\Middleware\RejectUnmappedDomain;
 use App\Http\Middleware\ResolveRegion;
+use App\Http\Middleware\SetMarketingLocale;
 use App\Http\Middleware\SetMerchantLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -19,10 +22,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->encryptCookies(except: [
+            'xycubic-marketing-locale',
+        ]);
+
         // Must run before StartSession inside the "web" group (session cookie name / domain).
         $middleware->prependToGroup('web', [
             ResolveRegion::class,
             ConfigureDomainSession::class,
+            RedirectMarketingPathsOnNonMarketingHosts::class,
+            SetMarketingLocale::class,
         ]);
 
         $middleware->appendToGroup('web', [
@@ -38,7 +47,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'domain.surface' => EnsureExpectedSurface::class,
             'access.admin' => EnsureAdminAccess::class,
             'access.merchant' => EnsureMerchantAccess::class,
-            'printing.module' => \App\Http\Middleware\EnsurePrintingModuleEnabled::class,
+            'printing.module' => EnsurePrintingModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

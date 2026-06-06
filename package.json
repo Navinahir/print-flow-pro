@@ -4,7 +4,10 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "watch": "vite build --watch",
+        "dev:merchant": "concurrently -k -n vite,merchant -c \"#fdba74,#93c5fd\" \"vite\" \"php artisan serve --host=localhost --port=8001\"",
+        "dev:all": "concurrently -k -n vite,mkt,merchant,admin -c \"#fdba74,#a7f3d0,#93c5fd,#c4b5fd\" \"vite\" \"php artisan serve --host=localhost --port=8000\" \"php artisan serve --host=localhost --port=8001\" \"php artisan serve --host=localhost --port=8002\""
     },
     "devDependencies": {
         "@tailwindcss/forms": "^0.5.2",

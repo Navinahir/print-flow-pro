@@ -34,7 +34,7 @@ class CourierCsvReaderService
             }
 
             $headers = array_map(
-                static fn (mixed $header): string => trim((string) $header),
+                static fn (mixed $header): string => self::stripBom(trim((string) $header)),
                 $headers,
             );
 
@@ -72,5 +72,14 @@ class CourierCsvReaderService
         }
 
         return true;
+    }
+
+    private static function stripBom(string $value): string
+    {
+        if (str_starts_with($value, "\xEF\xBB\xBF")) {
+            return substr($value, 3);
+        }
+
+        return $value;
     }
 }

@@ -13,6 +13,7 @@
         "laravel/tinker": "^2.10.1",
         "maatwebsite/excel": "^3.1",
         "predis/predis": "^3.4",
+        "setasign/fpdf": "1.8.6",
         "setasign/fpdi": "^2.6",
         "spatie/browsershot": "^5.3",
         "spatie/laravel-permission": "^7.4"
@@ -34,7 +35,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Support/merchant_config.php"
+            "app/Support/merchant_config.php",
+            "app/Support/pdf_fpdf_bootstrap.php"
         ]
     },
     "autoload-dev": {
@@ -54,6 +56,18 @@
         "dev": [
             "Composer\\Config::disableProcessTimeout",
             "npx concurrently -c \"#93c5fd,#c4b5fd,#fb7185,#fdba74\" \"php artisan serve\" \"php artisan queue:listen --tries=1 --timeout=0\" \"php artisan pail --timeout=0\" \"npm run dev\" --names=server,queue,logs,vite --kill-others"
+        ],
+        "dev:merchant": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run dev:merchant"
+        ],
+        "dev:domains": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run dev:all"
+        ],
+        "dev:watch": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run watch"
         ],
         "test": [
             "@php artisan config:clear --ansi",

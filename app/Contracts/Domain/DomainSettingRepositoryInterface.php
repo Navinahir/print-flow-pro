@@ -17,4 +17,11 @@ interface DomainSettingRepositoryInterface
     public function findByRegionKey(string $regionKey): ?DomainSetting;
 
     public function findByHost(string $host): ?DomainSetting;
+
+    public function findInfrastructureBySurface(string $surface): ?DomainSetting;
+
+    /**
+     * @return Collection<int, DomainSetting>
+     */
+    public function allInfrastructureSettings(): Collection;
 }

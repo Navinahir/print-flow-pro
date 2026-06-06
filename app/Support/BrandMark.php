@@ -31,7 +31,7 @@ final class BrandMark
 
     public static function logoUrl(): ?string
     {
-        $logo = merchant_config('brand.logo');
+        $logo = MerchantConfig::get('brand.logo');
 
         if (! is_string($logo) || $logo === '') {
             return null;

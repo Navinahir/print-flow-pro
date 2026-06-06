@@ -30,11 +30,13 @@ git clone <repository-url> print-flow-pro
 cd print-flow-pro
 
 composer install
-cp .env.example .env
+cp .env.example .env   # local only — .env is gitignored and must never be pushed
 php artisan key:generate
 ```
 
-Configure `.env` (database, Redis, `APP_URL`, `APP_TIMEZONE`). Then:
+Configure `.env` on each machine separately (database, Redis, `APP_KEY`, `APP_URL`). **Do not commit or deploy `.env` via git** — the VPS keeps its own production `.env` (create from `.env.example` once on the server). Domain hostnames are in the database, not in `.env`.
+
+Then:
 
 ```bash
 php artisan migrate
@@ -122,29 +124,49 @@ Admin (:8002/boss)    → Filament login
 
 ## Multi-domain architecture
 
-A single Laravel codebase serves three isolated surfaces via `Route::domain()` and middleware.
+**One Laravel codebase, one `public/` folder** — not separate project paths per domain. Nginx (or multiple `artisan serve` ports locally) points every vhost at the same app; Laravel picks the surface from the HTTP `Host` header.
 
-**Infrastructure** (marketing + admin hosts, routing toggle) remains in `.env` via `config/domains.php`.
+| Layer | How isolation works |
+| --- | --- |
+| Marketing / admin | `Route::domain()` on `MARKETING_DOMAIN` and `ADMIN_DOMAIN` |
+| Merchant (all regions) | `ResolveRegion` + `EnsureExpectedSurface` middleware (host → TW/PH/VN from DB) |
+| Unknown host | `RejectUnmappedDomain` → 404 when `DOMAIN_ROUTING_ENABLED=true` |
 
-**Merchant regions** (hosts, locales, branding, feature toggles, upload limits) are stored in the database and loaded through `DomainConfigurationService`. Run `DomainSettingSeeder` after migrate (included in `db:seed`).
+**Routing toggles** (`DOMAIN_ROUTING_ENABLED`, `DOMAIN_PORT_ROUTING`) live in `.env`.
 
-| Surface | Production host | Purpose |
+**All hostnames** (marketing, admin, merchant regions) are stored in `domain_settings` and loaded through `DomainConfigurationService`. Run `DomainSettingSeeder` after migrate (included in `db:seed`). Hosts are **not** read from `.env` — only `APP_ENV` selects defaults when seeding (`local` → `localhost:800x`, `production` → `xycubic.com`, etc.).
+
+**Local vs live:** locally, `DOMAIN_PORT_ROUTING=true` and seeded hosts use `localhost:8000` / `8001` / `8002`. In production, the same table uses `xycubic.com`, `tw.xycubic.com`, and `manage-xy.xycubic.com` on ports 80/443 (no port in URLs).
+
+| Surface | Production host | Root URL behaviour |
 | --- | --- | --- |
-| Marketing | `xycubic.com` | Public site (`/`, `/tw`, …) |
-| Merchant (TW) | `tw.xycubic.com` | Breeze auth, uploads, dashboard |
-| Admin | `manage-xy.xycubic.com` | Filament panel **only** under `/boss` |
+| Marketing | `xycubic.com` | `/` → `/tw` or `/en` |
+| Merchant (TW) | `tw.xycubic.com` | `/` → `/login` (guest) or `/dashboard` (signed in) |
+| Admin | `manage-xy.xycubic.com` | `/` → **403** (guest); use `/boss` to sign in |
 
 Future regions (`ph.xycubic.com`, `vn.xycubic.com`) are seeded in `domain_settings`. Inactive regions return **403** with `Region Not Activated Yet`. Enable a region by setting `is_active = true` on its row (or re-seeding from updated `config/domains.php` fallback definitions).
 
-### Merchant domain configuration (database-driven)
+### Domain configuration (database-driven)
 
-Merchant surface settings live in three tables:
+All surfaces share `domain_settings`. Merchant rows use `surface = merchant` and related locale/feature tables.
 
 | Table | Purpose |
 | --- | --- |
-| `domain_settings` | Region key, host, country code, active flag, session cookie, branding, JSON settings (upload limits, etc.) |
-| `domain_locales` | Supported locales per region (default locale flag) |
-| `domain_features` | Feature toggles per region (`uploads`, printing modules, etc.) |
+| `domain_settings` | Host, surface (`marketing` / `admin` / `merchant`), region key, active flag, session cookie, branding, JSON settings |
+| `domain_locales` | Supported locales per **merchant** region |
+| `domain_features` | Feature toggles per **merchant** region (`uploads`, printing modules, etc.) |
+
+**Infrastructure rows** (seeded, editable without server `.env` access):
+
+| `region_key` | `surface` | Production `host` | Notes |
+| --- | --- | --- | --- |
+| `marketing` | `marketing` | `xycubic.com` | Public landing |
+| `admin` | `admin` | `manage-xy.xycubic.com` | `settings.path_prefix` → `boss` (Filament) |
+| `tw` | `merchant` | `tw.xycubic.com` | Taiwan merchant portal |
+| `ph` | `merchant` | `ph.xycubic.com` | Inactive until `is_active = true` |
+| `vn` | `merchant` | `vn.xycubic.com` | Inactive until `is_active = true` |
+
+**Local seeded hosts** (`APP_ENV=local`): `localhost:8000`, `localhost:8002`, `localhost:8001`, `localhost:8003`, `localhost:8004`.
 
 **Architecture:**
 
@@ -185,24 +207,43 @@ php artisan db:seed --class=DomainSettingSeeder
 
 Initial values come from `config/domains.php` → `fallback_merchants` (used when the database is empty or as the seeder source). For production, edit rows in the database or extend the seeder — do not add per-region `.env` keys.
 
-**`.env` (infrastructure only):**
+**Production `.env` (minimal — hosts come from the database):**
 
 ```env
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://tw.xycubic.com
+
 DOMAIN_ROUTING_ENABLED=true
-MARKETING_DOMAIN=xycubic.com
-ADMIN_DOMAIN=manage-xy.xycubic.com
-ADMIN_PATH_PREFIX=boss
+DOMAIN_PORT_ROUTING=false
 ```
+
+**`.env` deleted on the server?** Restore it via GitHub Actions secrets (`APP_KEY`, `DB_*`, `VPS_IP`, `SSH_PRIVATE_KEY`) — the deploy workflow runs `scripts/sync-production-env.sh` to rewrite `.env` on the VPS without SSH.
+
+After deploy (or auto-deploy on push to `main` via `.github/workflows/deploy.yml`):
+
+```bash
+php artisan migrate --force
+php artisan db:seed --class=DomainSettingSeeder
+php artisan config:clear
+php artisan domain:validate --fix-hosts
+```
+
+`domain:validate` checks routing flags, loopback hosts in production, and all `domain_settings.host` rows. `--fix-hosts` re-runs `DomainSettingSeeder` from `config/domains.php` fallbacks (production hostnames when `APP_ENV=production`).
+
+**Change a live hostname without SSH:** update the `host` column on the matching `domain_settings` row (e.g. `region_key = tw`). Cache clears automatically on save.
 
 PHPUnit sets `DOMAIN_ROUTING_ENABLED=false` so feature tests keep using a single `localhost` host without breaking named routes. Domain configuration tests use the full merchant URL (e.g. `http://tw.xycubic.com/login`) so host resolution matches production behavior.
 
 | File | Registered on |
 | --- | --- |
-| `routes/marketing.php` | Marketing domain |
-| `routes/merchant.php` | Active merchant domains (full app on primary region, e.g. TW) |
-| `routes/admin.php` | Admin domain fallbacks (404 for unmapped paths) |
+| `routes/marketing.php` | `MARKETING_DOMAIN` only |
+| `routes/merchant.php` | All merchant hosts (middleware enforces surface + active region) |
+| `routes/admin.php` | `ADMIN_DOMAIN` fallbacks (404 for unmapped paths) |
 
 `App\Providers\RouteServiceProvider` registers domain groups. Filament is constrained to the admin domain and `ADMIN_PATH_PREFIX` (default `boss`) in `AdminPanelProvider`.
+
+**Troubleshooting:** If `tw.xycubic.com` or `manage-xy.xycubic.com` show the marketing page at `/tw`, production is using a local `.env` or stale config cache. Set `APP_ENV=production`, `DOMAIN_PORT_ROUTING=false`, run `php artisan config:clear`, then `php artisan domain:validate --fix-hosts`. Ensure Nginx points all vhosts at the same Laravel `public/` directory (routing is by `Host`, not separate code paths).
 
 ### Middleware
 
@@ -216,9 +257,61 @@ PHPUnit sets `DOMAIN_ROUTING_ENABLED=false` so feature tests keep using a single
 | `access.merchant` | `EnsureMerchantAccess` | Merchant-surface role gate (logout if unauthorized) |
 | `access.admin` | `EnsureAdminAccess` | Admin-surface role gate (Filament auth stack) |
 
+`SetMarketingLocale` (web group) sets `app()->getLocale()` on the marketing surface from the locale cookie, path (`/tw`, `/en`), defaulting to `zh-TW`.
+
 `ResolveRegion` binds `App\Support\Domains\DomainContext` and `App\DTOs\Domain\MerchantDomainConfig` into the container for services, branding, and future payment isolation.
 
+### Marketing site
+
+Public landing only — no Breeze login. Merchant signup CTA links to the TW merchant host `/register`.
+
+| Local URL | Purpose |
+| --- | --- |
+| `http://localhost:8000/` | Redirects to `/tw` or `/en` (locale cookie / first visit → `/tw`) |
+| `http://localhost:8000/tw` | Traditional Chinese landing (default) |
+| `http://localhost:8000/en` | English landing |
+
+**Stack:** `resources/views/marketing/` (layout + components), `resources/css/marketing.css`, `resources/js/marketing.js`, `lang/{en,zh-TW}/marketing.php`, `config/marketing.php`.
+
+**UX:** Responsive nav (drawer below 992px width), dark/light theme (`localStorage`), locale switcher (`localStorage` + cookie).
+
+### Environment variables
+
+| Variable | Purpose |
+| --- | --- |
+| `DOMAIN_ROUTING_ENABLED` | `true` — host-based surfaces; `false` — single-host dev/tests |
+| `DOMAIN_PORT_ROUTING` | `true` locally (artisan serve ports); **must be `false` in production** |
+| `APP_ENV` | `local` vs `production` — controls seeded hosts in `DomainSettingSeeder` (via `config/domains.php`) |
+
+Merchant hosts and `is_active` are **not** in `.env` — use `domain_settings` only.
+
+PHPUnit sets `DOMAIN_ROUTING_ENABLED=false` so most feature tests use a single host without breaking named routes. Domain tests enable routing explicitly.
+
 ### Local development (port-based)
+
+**Frontend assets:** Do not run `npm run build` manually during development. Start Vite alongside PHP so CSS/JS reload automatically:
+
+```bash
+# Merchant portal only (localhost:8001) — recommended for UI work
+composer dev:merchant
+# or: npm run dev:merchant
+
+# All three domains (8000 marketing, 8001 merchant, 8002 admin) + one Vite dev server
+composer dev:domains
+# or: npm run dev:all
+
+# Full stack (single artisan serve + queue + logs + Vite)
+composer dev
+```
+
+If you cannot run the Vite dev server, use automatic production rebuilds instead:
+
+```bash
+composer dev:watch
+# or: npm run watch
+```
+
+Only run `npm run build` once before deploying to production (the VPS deploy script does this automatically).
 
 ```bash
 # Terminal 1 — marketing (xycubic.com)
@@ -234,21 +327,32 @@ php artisan serve --host=localhost --port=8002
 `.env` for local ports (see `.env.example`). Merchant hosts are seeded into `domain_settings` (TW → `localhost:8001`, PH → `localhost:8003`, VN → `localhost:8004` when `APP_ENV=local`):
 
 ```env
+APP_ENV=local
 APP_URL=http://localhost:8001
 MARKETING_DOMAIN=localhost:8000
 ADMIN_DOMAIN=localhost:8002
 ADMIN_PATH_PREFIX=boss
 DOMAIN_ROUTING_ENABLED=true
+DOMAIN_PORT_ROUTING=true
 ```
+
+`DOMAIN_PORT_ROUTING=true` skips `Route::domain()` for marketing/admin so `artisan serve` on ports 8000–8002 works. **Must be `false` in production.**
+
+| Production URL | Expected root behaviour |
+| --- | --- |
+| `https://xycubic.com/` | Redirect to `/tw` or `/en` |
+| `https://tw.xycubic.com/` | Redirect to `/login` (guest) or `/dashboard` (authenticated) |
+| `https://manage-xy.xycubic.com/` | **403** for guests at `/`; sign in at `/boss` |
 
 | Local URL | Surface |
 | --- | --- |
-| http://localhost:8000/ | Marketing home |
-| http://localhost:8000/tw | Marketing TW landing |
+| http://localhost:8000/ | Redirects to `/tw` or `/en` |
+| http://localhost:8000/tw | Marketing landing (zh-TW, default) |
+| http://localhost:8000/en | Marketing landing (en) |
 | http://localhost:8001/login | Merchant auth |
 | http://localhost:8001/dashboard | Merchant dashboard |
 | http://localhost:8002/boss | Filament admin (`admin` only) |
-| http://localhost:8002/ | **404** (obfuscated) |
+| http://localhost:8002/ | **403** (guest) or Filament when signed in at `/boss` |
 | http://localhost:8002/admin | **404** (obfuscated) |
 
 Route smoke checks:
@@ -362,26 +466,9 @@ On the TW merchant domain (`tw.xycubic.com` / `localhost:8001`), `ResolveRegion`
 
 Merchants can toggle **Light**, **Dark**, or **System** theme from the navbar. Preference persists in a cookie + `localStorage` (`ThemeService`, `resources/js/merchant/theme.js`). Tailwind `darkMode: 'class'` applies across merchant layouts, cards, preview panes, and nav controls. Print output is unaffected (dedicated `@media print` rules in `resources/css/merchant/preview/print.css`).
 
-### Merchant architecture audit & roadmap
+### Merchant portal status
 
-Full analysis of the merchant domain (port 8001): current architecture, gaps, DB settings strategy, localization plan, folder structure, UI/components strategy, and phased implementation plan:
-
-**[MERCHANT_DOMAIN_ARCHITECTURE.md](MERCHANT_DOMAIN_ARCHITECTURE.md)**
-
-**[MERCHANT_RECONCILIATION_REPORT.md](MERCHANT_RECONCILIATION_REPORT.md)** — Audit and cleanup pass (2026-05-30): architecture alignment, namespace migration, legacy view removal, CSS/JS deduplication, localization fixes.
-
-Summary of upcoming merchant-only phases (no admin/marketing changes):
-
-| Phase | Focus |
-| --- | --- |
-| 0 | Foundation cleanup — legacy views, lang keys, redirect fixes | **Mostly done** — see [reconciliation report](MERCHANT_RECONCILIATION_REPORT.md) |
-| 1 | `<x-merchant::*>` components, controller/service namespaces | **Partial** — controllers migrated; component namespace partial |
-| 2 | Locale switcher (EN / zh-TW) | **Done** |
-| 3 | Printing module master-detail shells | **Done** |
-| 4 | Preview engine + live preview + CSV + print + DB preview config | **Done** |
-| 5 | Upload show preview, dark mode, navbar UX | **Done** |
-| 6 | Sidebar collapse, footer actions, locale loader, form standardization | **Done** |
-| 7 | Dashboard stats, CI domain-routing tests |
+The TW merchant portal (port 8001) is feature-complete for Milestone 1: dedicated Blade UI, locale switcher, four printing module workspaces, 150×100 mm preview engine, safe zone, aspect ratio validation, courier auto-shrink, CSV import, upload preview, dark mode, and browser print. Track remaining polish and M2 items in `TODO.md` and `MILESTONE_1_AUDIT.md`.
 
 ### Local merchant URLs
 
@@ -483,7 +570,7 @@ Preview dimensions and behavior are stored in `domain_settings.settings.preview`
 
 ### Upload detail preview
 
-Upload show pages (`/uploads/{id}`) embed the shared preview engine. `UploadPreviewService` maps upload job types to existing preview DTOs; AJAX refresh via `POST /uploads/{upload}/preview`. See [UX completion report](MERCHANT_UX_COMPLETION_REPORT.md).
+Upload show pages (`/uploads/{id}`) embed the shared preview engine. `UploadPreviewService` maps upload job types to existing preview DTOs; AJAX refresh via `POST /uploads/{upload}/preview`.
 
 ### Print workflow
 
@@ -526,20 +613,28 @@ Sample list items demonstrate standard, long, and multi-line addresses when no D
 ### Production deployment
 
 - Point DNS A/AAAA records for marketing, `tw`, and `manage-xy` hosts to the app.
-- Set `DOMAIN_ROUTING_ENABLED=true` and infrastructure domains in `.env`.
-- Run `php artisan db:seed --class=DomainSettingSeeder` (or full `db:seed`) so merchant hosts, locales, and features exist in `domain_settings`.
+- **Nginx:** one `root` → Laravel `public/` for all vhosts (routing is by `Host`). All three production hosts share the same document root.
+- Use a **production-specific `.env`** — not the local port-based file. Required: `APP_ENV=production`, `DOMAIN_ROUTING_ENABLED=true`, `DOMAIN_PORT_ROUTING=false`.
+- Seed or verify `domain_settings` (marketing, admin, merchant hosts) — see § Domain configuration.
+- Run `php artisan config:clear` after any `.env` change (avoid stale `config:cache` from a dev machine).
+- Run `php artisan domain:validate --fix-hosts` to verify hosts and re-seed `domain_settings` if needed.
 - Use separate session cookie names per surface so cookies do not leak across subdomains (stored on `domain_settings.session_cookie` for merchants).
 - Enable PH/VN by setting `is_active = true` on the corresponding `domain_settings` row when ready; until then, those hosts respond with 403.
 
+**Host matching:** `DomainResolver` normalizes HTTPS hosts (e.g. `tw.xycubic.com:443` → `tw.xycubic.com`) so SSL termination does not break surface detection.
+
 ## Local development
 
-Use the Composer dev script to run the app server, queue worker, log tail, and Vite together:
+Use the Composer dev scripts so Vite rebuilds assets automatically — **no manual `npm run build` needed** while developing:
 
-```bash
-composer dev
-```
+| Command | Use when |
+| --- | --- |
+| `composer dev:merchant` | Working on merchant UI (port 8001) |
+| `composer dev:domains` | Testing marketing + merchant + admin together |
+| `composer dev` | Single-server mode with queue + logs |
+| `composer dev:watch` | Fallback: auto `vite build` on file changes (no HMR) |
 
-For multi-domain local testing, use the three `php artisan serve` commands above instead of a single server.
+For multi-domain local testing without the scripts above, run three `php artisan serve` instances **plus** `npm run dev` in a fourth terminal.
 
 Or run services separately:
 
@@ -580,12 +675,13 @@ app/
 ├── DTOs/         # Structured data transfer objects (incl. MerchantDomainConfig)
 ├── Enums/        # Domain enumerations (e.g. roles)
 ├── Filament/     # Admin panel resources, pages, widgets
-├── Http/         # Controllers, middleware, form requests
+├── Http/         # Controllers, middleware (`SetMarketingLocale`, …), form requests
 ├── Jobs/         # Queued work
 ├── Models/       # Eloquent models (incl. DomainSetting, DomainLocale, DomainFeature)
 ├── Repositories/ # DomainSettingRepository
 ├── Services/     # Domain services (PDF, picking, labels, DomainConfigurationService)
-└── Support/      # Shared helpers (MerchantConfig, DomainResolver)
+├── Support/      # Shared helpers (MerchantConfig, DomainResolver)
+└── View/         # Blade components; `MarketingComposer` (merchant register URL for landing)
 ```
 
 Authorization (V2.4 milestone):
@@ -631,18 +727,17 @@ Merchants register at `/register` (creates a `merchants` profile automatically).
 
 Configure upload limits per region in `domain_settings.settings` (seeded by `DomainSettingSeeder`) or via `MerchantConfig::get('upload.max_file_size_kb')`.
 
-Design principles (see `PROJECT_ARCHITECTURE.md` and `CURSOR_RULES.md`):
+Design principles:
 
 - Thin controllers; business logic in Actions and Services
 - Form requests for validation
-- Queue-ready jobs for heavy PDF work
+- Queue-ready jobs for heavy PDF work — see `MILESTONE_2_AUDIT.md` (M2)
 - Multi-domain routing and per-region session isolation (`config/domains.php`, domain middleware)
-- Temp-file security (planned in Phase 1 TODO)
 
 Filesystem disks:
 
 - `local` — private app storage
-- `temp` — short-lived upload/processing files (auto-cleanup planned)
+- `temp` — short-lived upload/processing files (M2: download shred + 10-min cron purge — see `MILESTONE_2_AUDIT.md`)
 - `public` — user-facing assets via `storage:link`
 
 ## Branch workflow
@@ -658,7 +753,53 @@ Filesystem disks:
 
 **Excluded:** Shopee API, OAuth, webhooks, realtime sync, advanced queue concurrency, 429 retry logic.
 
-Track implementation progress in `TODO.md` and the merchant architecture roadmap in `MERCHANT_DOMAIN_ARCHITECTURE.md`.
+Track implementation progress in `TODO.md`. Milestone audits: `MILESTONE_1_AUDIT.md` (complete), `MILESTONE_2_AUDIT.md` (architecture plan).
+
+## Milestone 2 — PDF Engine
+
+**Status:** PDF engine foundation + **logistics labels normalization** implemented (2026-06-06).
+
+| Deliverable | Status |
+| --- | --- |
+| `config/pdf.php` + `PdfServiceProvider` | Done |
+| Core services (`PdfEngineService`, `PdfNormalizationService`, `PdfCanvasService`, `PdfValidationService`, `PdfBoundaryDetectionService`) | Done |
+| FPDI integration (`setasign/fpdf` + `FpdiDocumentAdapter`) | Done — validation + normalization |
+| Processing pipeline (6 stages) + Actions | Done — normalization active for thermal labels |
+| DTOs, interfaces, exceptions, localization | Done |
+| **Logistics labels processor** | **Done** — thermal only; A4 rejected; 150×100 mm output |
+| `PrintJob` model, queue job, merchant UI list/preview/download | Done (logistics module) |
+| Module processors (order merge, delivery, picking) | Not started |
+
+**Documentation:**
+
+- Architecture plan: [`MILESTONE_2_AUDIT.md`](MILESTONE_2_AUDIT.md)  
+- Foundation report: [`MILESTONE_2_IMPLEMENTATION_REPORT.md`](MILESTONE_2_IMPLEMENTATION_REPORT.md)  
+- **Logistics labels report:** [`MILESTONE_2_LOGISTICS_IMPLEMENTATION_REPORT.md`](MILESTONE_2_LOGISTICS_IMPLEMENTATION_REPORT.md)  
+
+**Developer usage:**
+
+```php
+$result = app(\App\Actions\Merchant\Pdf\RunPdfProcessingPipeline::class)->execute($uploadJob);
+```
+
+**Dependencies:** `setasign/fpdi`, `setasign/fpdf ^1.8.6` (loaded via `app/Support/pdf_fpdf_bootstrap.php`)
+
+**M2 infrastructure (enable when queue processing ships):**
+
+```env
+QUEUE_CONNECTION=redis
+CACHE_STORE=redis
+# BROWSERSHOT_NODE_BINARY=
+# BROWSERSHOT_NPM_BINARY=
+# BROWSERSHOT_CHROME_PATH=
+```
+
+**Developer entry point after M1:**
+
+```bash
+composer dev:merchant    # Vite + merchant server (port 8001)
+php artisan queue:work     # local testing once jobs exist
+```
 
 ## License
 

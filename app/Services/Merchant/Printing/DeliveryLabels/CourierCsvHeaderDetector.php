@@ -17,6 +17,9 @@ final class CourierCsvHeaderDetector
         'address',
         'address_line_1',
         'address1',
+        '地址',
+        '配送地址',
+        '收件地址',
     ];
 
     /**
@@ -28,6 +31,13 @@ final class CourierCsvHeaderDetector
         'note',
         'delivery_notes',
         'special_instructions',
+        'seller_note',
+        'remark_from_buyer',
+        '備註',
+        '備注',
+        '賣家備註',
+        '買家備註',
+        '備註說明',
     ];
 
     /**
@@ -39,6 +49,11 @@ final class CourierCsvHeaderDetector
         'consignee',
         'customer_name',
         'name',
+        '收件人',
+        '收件人姓名',
+        '姓名',
+        '姓名電話',
+        '姓名、電話',
     ];
 
     /**
@@ -50,6 +65,9 @@ final class CourierCsvHeaderDetector
         'tracking',
         'waybill',
         'shipment_id',
+        '追蹤號碼',
+        '追蹤編號',
+        '物流單號',
     ];
 
     /**
@@ -60,6 +78,9 @@ final class CourierCsvHeaderDetector
         'courier',
         'logistics_provider',
         'shipping_carrier',
+        '物流商',
+        '物流業者',
+        '配送方式',
     ];
 
     /**

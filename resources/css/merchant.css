@@ -8,6 +8,7 @@
 @import './merchant/profile-photo.css';
 @import './merchant/guest.css';
 @import './merchant/printing-workspace.css';
+@import './merchant/uploads.css';
 
 @tailwind base;
 @tailwind components;

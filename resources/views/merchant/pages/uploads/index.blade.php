@@ -37,44 +37,77 @@
             @endslot
         @endcomponent
     @else
-        <div class="merchant-card overflow-hidden p-0">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-slate-200 text-sm">
-                    <thead class="bg-slate-50">
-                        <tr>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.id') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.type') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.status') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.files') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.uploaded_by') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-700">{{ __('merchant.uploads.table.date') }}</th>
-                            <th class="px-4 py-3"><span class="sr-only">{{ __('merchant.uploads.table.actions') }}</span></th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        @foreach ($jobs as $job)
-                            <tr class="hover:bg-slate-50">
-                                <td class="px-4 py-3 font-medium text-slate-900">#{{ $job->id }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $job->type?->label() }}</td>
-                                <td class="px-4 py-3">
-                                    @include('merchant.components.upload-status-badge', ['status' => $job->status])
-                                </td>
-                                <td class="px-4 py-3 text-slate-600">{{ $job->file_count }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ $job->uploadedBy?->email ?? '—' }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ $job->created_at?->format('M j, Y H:i') }}</td>
-                                <td class="px-4 py-3 text-right">
-                                    <a href="{{ route('uploads.show', $job) }}" class="font-medium text-amber-700 hover:text-amber-600">
-                                        {{ __('merchant.uploads.table.view') }}
-                                    </a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+        <div x-data="uploadIndex">
+            {{-- Mobile card layout --}}
+            <div class="space-y-3 md:hidden">
+                @foreach ($jobs as $job)
+                    <article class="merchant-card" data-upload-row="{{ $job->id }}">
+                        <div class="flex items-start justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-slate-900 dark:text-slate-100">#{{ $job->id }}</p>
+                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $job->type?->label() }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ $job->created_at?->format('M j, Y H:i') }}</p>
+                            </div>
+                            <div class="shrink-0 text-right">
+                                @include('merchant.components.upload-status-badge', ['status' => $job->status])
+                                <p class="mt-2 text-xs text-slate-500">{{ $job->file_count }} {{ strtolower(__('merchant.uploads.table.files')) }}</p>
+                            </div>
+                        </div>
+                        @include('merchant.pages.uploads.partials.index-actions', ['job' => $job])
+                    </article>
+                @endforeach
+                @if ($jobs->hasPages())
+                    <div class="py-2">{{ $jobs->links() }}</div>
+                @endif
             </div>
-            @if ($jobs->hasPages())
-                <div class="border-t border-slate-200 px-4 py-3">{{ $jobs->links() }}</div>
-            @endif
+
+            {{-- Desktop table --}}
+            <div class="merchant-card hidden overflow-hidden p-0 md:block">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm dark:divide-slate-700">
+                        <thead class="bg-slate-50 dark:bg-slate-900/40">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.id') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.type') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.status') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.files') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.uploaded_by') }}</th>
+                                <th class="px-4 py-3 text-left font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.date') }}</th>
+                                <th class="px-4 py-3 text-right font-semibold text-slate-700 dark:text-slate-200">{{ __('merchant.uploads.table.actions') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                            @foreach ($jobs as $job)
+                                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30" data-upload-row="{{ $job->id }}">
+                                    <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">#{{ $job->id }}</td>
+                                    <td class="px-4 py-3 text-slate-700 dark:text-slate-300">{{ $job->type?->label() }}</td>
+                                    <td class="px-4 py-3">
+                                        @include('merchant.components.upload-status-badge', ['status' => $job->status])
+                                    </td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $job->file_count }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $job->uploadedBy?->email ?? '—' }}</td>
+                                    <td class="px-4 py-3 text-slate-600 dark:text-slate-400">{{ $job->created_at?->format('M j, Y H:i') }}</td>
+                                    <td class="px-4 py-3">
+                                        @include('merchant.pages.uploads.partials.index-actions', ['job' => $job])
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if ($jobs->hasPages())
+                    <div class="border-t border-slate-200 px-4 py-3 dark:border-slate-700">{{ $jobs->links() }}</div>
+                @endif
+            </div>
         </div>
+
+        <script>
+            window.__merchantUploadIndex = {
+                deleteTitle: @js(__('merchant.uploads.delete.confirm_title')),
+                deleteText: @js(__('merchant.uploads.delete.confirm_text')),
+                deleteConfirm: @js(__('merchant.uploads.delete.confirm_button')),
+                deleteSuccess: @js(__('merchant.uploads.delete.success')),
+            };
+        </script>
     @endif
 @endsection

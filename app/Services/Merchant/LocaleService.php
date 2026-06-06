@@ -65,6 +65,16 @@ class LocaleService
             return $cookie;
         }
 
+        $user = $request->user();
+
+        if ($user !== null) {
+            $storedLocale = $user->getAttributes()['locale'] ?? null;
+
+            if (is_string($storedLocale) && $storedLocale !== '' && $this->isSupported($storedLocale)) {
+                return $storedLocale;
+            }
+        }
+
         $config = $this->domainConfiguration->current();
 
         return $config?->defaultLocale ?? (string) config('app.locale', 'en');
@@ -86,6 +96,12 @@ class LocaleService
         $request->session()->put(self::SESSION_KEY, $locale);
         app()->setLocale($locale);
         config(['app.locale' => $locale]);
+
+        $user = $request->user();
+
+        if ($user !== null) {
+            $user->forceFill(['locale' => $locale])->save();
+        }
     }
 
     public function makePreferenceCookie(string $locale): Cookie

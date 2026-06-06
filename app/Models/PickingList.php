@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\UploadStatus;
+use App\Models\Concerns\BelongsToCountry;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PickingList extends Model
 {
+    use BelongsToCountry;
     use HasFactory;
 
     /**
@@ -18,6 +20,7 @@ class PickingList extends Model
      */
     protected $fillable = [
         'merchant_id',
+        'country_code',
         'upload_job_id',
         'source_name',
         'source_disk',

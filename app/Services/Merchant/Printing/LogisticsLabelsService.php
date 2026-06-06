@@ -6,6 +6,7 @@ namespace App\Services\Merchant\Printing;
 
 use App\DTOs\Merchant\Printing\PrintingListItemData;
 use App\Enums\PrintingModule;
+use App\Enums\UploadJobType;
 use App\Models\User;
 use App\Services\Merchant\Preview\LogisticsLabelsPreviewService;
 
@@ -13,6 +14,8 @@ class LogisticsLabelsService extends PrintingModuleService
 {
     public function __construct(
         private readonly LogisticsLabelsPreviewService $previewService,
+        private readonly PrintJobListMapper $printJobListMapper,
+        private readonly UploadJobListMapper $uploadJobListMapper,
     ) {}
 
     public function module(): PrintingModule
@@ -25,6 +28,18 @@ class LogisticsLabelsService extends PrintingModuleService
      */
     protected function listItemsForUser(User $user): array
     {
+        $fromPrintJobs = $this->printJobListMapper->listItemsFor($user);
+
+        if ($fromPrintJobs !== []) {
+            return $fromPrintJobs;
+        }
+
+        $fromUploads = $this->uploadJobListMapper->listItemsFor($user, UploadJobType::ThermalLabel);
+
+        if ($fromUploads !== []) {
+            return $fromUploads;
+        }
+
         $preview = $this->previewService->buildSamplePreview('1')->toArray();
 
         return [

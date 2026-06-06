@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Http\Responses\AdminUnauthorizedResponse;
 use App\Support\Domains\DomainContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -20,11 +21,9 @@ class ObfuscateAdminAccess
             return $next($request);
         }
 
-        // Allow root path and redirect to admin prefix
         $path = trim($request->path(), '/');
         if ($path === '') {
-            $prefix = trim((string) config('domains.admin.path_prefix', 'boss'), '/');
-            return redirect("/{$prefix}");
+            return AdminUnauthorizedResponse::make($request);
         }
 
         if ($this->isAllowedAdminPath($request)) {

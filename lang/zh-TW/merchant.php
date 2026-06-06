@@ -13,6 +13,14 @@ return [
         'region_inactive' => '此區域尚未啟用。',
     ],
 
+    'unauthorized' => [
+        'title' => '無法存取',
+        'heading' => '您沒有權限存取此頁面',
+        'message' => '此商家工作區僅能透過授權的登入網址使用。如需存取權限，請聯絡您的管理員。',
+        'status' => '403 禁止存取',
+        'login_link' => '前往登入',
+    ],
+
     'general' => [
         'not_available' => '—',
     ],
@@ -128,9 +136,11 @@ return [
             ],
         ],
         'stats' => [
+            'total_uploads' => '總上傳數',
             'recent_uploads' => '近期上傳',
             'pending_jobs' => '待處理工作',
             'completed_jobs' => '已完成工作',
+            'no_recent' => '尚無上傳紀錄 — 從新增上傳開始。',
         ],
     ],
 
@@ -140,7 +150,7 @@ return [
         'show_title' => '上傳 #:id',
         'subtitle' => '管理檔案上傳與處理狀態',
         'create_subtitle' => '選擇類型並拖放檔案',
-        'show_subtitle' => '上傳詳情與檔案清單',
+        'show_subtitle' => '檢視上傳檔案、處理結果與可列印輸出',
         'new_upload' => '新增上傳',
         'back_to_history' => '返回紀錄',
         'empty' => [
@@ -157,11 +167,13 @@ return [
             'date' => '日期',
             'actions' => '操作',
             'view' => '檢視',
+            'delete' => '刪除',
         ],
         'form' => [
             'type_label' => '上傳類型',
             'type_placeholder' => '選擇類型…',
             'accepted_pdf' => '接受格式：PDF',
+            'accepted_delivery' => '接受格式：PDF、CSV、XLS、XLSX',
             'accepted_spreadsheet' => '接受格式：CSV、XLS、XLSX',
             'dropzone_title' => '拖放檔案至此，或',
             'dropzone_browse' => '瀏覽',
@@ -169,19 +181,138 @@ return [
             'uploading' => '上傳中…請稍候。',
             'cancel' => '取消',
             'submit' => '上傳檔案',
+            'thermal_output_heading' => '輸出檔案',
+            'thermal_output_hint' => '上傳多個 PDF 時，可選擇合併為一個 A4 輸出，或每個上傳檔案各自產生輸出。',
+            'thermal_output_combined' => '合併為一個輸出檔',
+            'thermal_output_separate' => '每個上傳檔案各自輸出',
+        ],
+        'delete' => [
+            'confirm_title' => '刪除此上傳？',
+            'confirm_text' => '將刪除上傳紀錄、所有產生的輸出檔與原始上傳檔案，且無法復原。',
+            'confirm_button' => '刪除上傳',
+            'success' => '上傳已成功刪除。',
         ],
         'detail' => [
             'type' => '類型',
             'status' => '狀態',
             'uploaded_by' => '上傳者',
             'file_count' => '檔案數量',
-            'pdf_files' => 'PDF 檔案',
+            'uploaded_at' => '上傳時間',
+            'last_updated' => '最後更新',
+            'pdf_files' => '已上傳 PDF 檔案',
+            'pdf_files_hint' => '您為此工作提交的原檔。',
             'spreadsheet_files' => '試算表檔案',
             'preview_placeholder' => '預覽顯示於右側面板。',
+            'validation_failed' => '處理失敗',
+            'validation_failed_hint' => '請確認檔案格式與尺寸，並從上傳頁下載參考範例後再試一次。',
+            'print_outputs' => '可列印 A4 輸出',
+            'print_outputs_hint' => '正規化後可供下載與列印。單一標籤輸出為一張 A4；多張標籤最多四張排列於一張 A4。',
+            'sheet_title' => 'A4 第 :number 張',
+            'layout_single' => '1 張標籤 · 單張版面',
+            'layout_multi' => ':count 張標籤 · 2×2 排列',
+            'a4_size_label' => ':width×:height mm A4',
+            'source_unknown' => '來源標籤資訊不可用',
+            'source_file' => '已上傳檔案',
+            'source_page_ref' => ':file（第 :page 頁）',
+            'source_labels_heading' => '此張包含的標籤',
+            'page_label' => '第 :page 頁',
+            'processing_result' => '處理結果',
+            'processing_result_hint_single' => '來自 :files 個檔案的 :labels 張熱感標籤 → 已產生 :sheets 張 A4 輸出。',
+            'processing_result_hint_multi' => '來自 :files 個檔案的 :labels 張熱感標籤 → 已產生 :sheets 張 A4 輸出（每張最多 4 張標籤）。',
+            'labels_count' => ':count 張標籤',
+            'sheets_count' => ':count 張 A4',
+            'action_view' => '檢視檔案',
+            'action_preview' => '預覽',
+            'action_download' => '下載',
+            'action_print' => '列印',
+            'action_regenerate' => '重新產生',
+            'regenerating' => '重新產生中…',
+            'regenerate_success' => '輸出已重新產生。',
+            'output_file_sheet_title' => ':file（第 :number 張）',
+            'view_modal_hint' => 'PDF 預覽 — 可從工具列下載或列印。',
+        ],
+        'errors' => [
+            'source_missing' => '上傳的檔案已無法使用。',
+            'regenerate_unsupported' => '僅限熱感標籤上傳可重新產生。',
+            'regenerate_not_ready' => '處理進行中，無法重新產生。',
+            'regenerate_missing_sources' => '原始上傳檔案已遺失，無法重新產生。',
+        ],
+        'guides' => [
+            'heading' => '上傳說明',
+            'select_type_hint' => '請先在左側選擇上傳類型，此處會顯示檔案要求、拒絕格式與參考範例。',
+            'rejections_heading' => '以下將被拒絕',
+            'samples_heading' => '參考範例檔',
+            'samples_intro' => '上傳前請先下載範例檔，比對版面與尺寸是否正確。',
+            'sample_download' => '下載範例',
+            'sample_preview' => '預覽範例',
+            'sample_preview_close' => '關閉預覽',
+            'sample_preview_modal_hint' => '參考檔案預覽',
+            'sample_preview_loading' => '正在載入預覽…',
+            'sample_preview_error' => '無法載入預覽，請改為下載檔案。',
+            'sample_preview_unavailable' => '此檔案類型無法在瀏覽器中預覽，請使用下載圖示在本機開啟。',
+            'thermal_label' => [
+                'instructions' => [
+                    '請上傳從 Shopee 賣家中心匯出的熱感物流標籤 PDF。',
+                    '支援尺寸：約 10×15 公分（100×150 mm），直向或橫向皆可。',
+                    '每一 PDF 頁面會產生一張 150×100 mm 的正規化列印標籤。',
+                    '可一次上傳多個 PDF；每一頁會分別處理。',
+                ],
+                'rejections' => [
+                    'A4 批次物流標籤（210×297 mm）不支援。',
+                    '短邊小於 90 mm 或長邊大於 160 mm 的標籤。',
+                    '損毀、受密碼保護或非 PDF 檔案。',
+                ],
+                'samples' => [
+                    'single' => '單頁熱感標籤',
+                    'single_hint' => '一個檔案一張標籤 — 預覽顯示一筆列印輸出。',
+                    'multipage' => '多頁熱感標籤',
+                    'multipage_hint' => '一個 PDF 含多張標籤 — 每頁會成為獨立的列印項目。',
+                ],
+            ],
+            'order_pdf' => [
+                'instructions' => [
+                    '上傳從 Shopee 賣家中心匯出的訂單明細 PDF。',
+                    '僅接受 PDF。可一次上傳多個訂單檔案。',
+                ],
+                'rejections' => [
+                    '試算表或圖片檔（非 PDF）。',
+                ],
+                'samples' => [
+                    'a' => '訂單 PDF 範例 A',
+                    'b' => '訂單 PDF 範例 B',
+                ],
+            ],
+            'picking_list' => [
+                'instructions' => [
+                    '上傳倉儲或 Shopee 工具匯出的揀貨清單試算表。',
+                    '接受格式：CSV、XLS、XLSX。',
+                ],
+                'rejections' => [
+                    '揀貨單上傳不可使用 PDF 檔案。',
+                ],
+                'samples' => [
+                    'a' => '揀貨清單範例 A',
+                    'b' => '揀貨清單範例 B',
+                ],
+            ],
+            'delivery_label' => [
+                'instructions' => [
+                    '以 CSV 或 Excel 上傳收件地址，或上傳已準備好的出貨標籤 PDF。',
+                    '試算表必填欄位：收件人姓名與地址。',
+                ],
+                'rejections' => [
+                    '缺少收件人或地址欄位的試算表。',
+                ],
+                'samples' => [
+                    'csv' => '範例 CSV（依語系欄位）',
+                    'xlsx' => '地址試算表範例（XLSX）',
+                ],
+            ],
         ],
         'preview' => [
-            'heading' => '上傳預覽',
-            'description' => '此上傳工作的 :width×:height mm 列印預覽。',
+            'heading' => '輸出預覽',
+            'description' => ':width×:height mm 正規化輸出預覽。',
+            'description_pdf' => '所選 A4 列印張的即時 PDF 預覽。',
             'refresh' => '重新整理預覽',
             'refreshing' => '正在重新整理…',
             'retry' => '重試',
@@ -189,6 +320,11 @@ return [
             'error_title' => '無法載入預覽',
             'empty_title' => '預覽尚未就緒',
             'empty_description' => '處理流程尚未產生此工作的可列印預覽。',
+            'processing' => '正在處理您的檔案…此頁面會自動更新。',
+            'processing_failed' => '處理失敗。請查看下方錯誤訊息。',
+            'select_label' => '選擇 A4 輸出張',
+            'print_job_subtitle' => '第 :page 張 · :width×:height mm A4',
+            'pdf_loading' => '正在載入 PDF 預覽…',
         ],
         'status' => [
             'pending' => '待處理',
@@ -274,6 +410,8 @@ return [
 
     'printing' => [
         'section_title' => '列印模組',
+        'upload_job_subtitle' => '工作 #:id · :status · :date',
+        'upload_job_remarks' => '上傳工作 #:id',
         'dashboard_description' => '選擇模組以在列印前預覽標籤、訂單與揀貨單。',
         'modules_available' => '{1} :count 個模組可用|[2,*] :count 個模組可用',
         'nav_none_enabled' => '此區域尚未啟用任何列印模組。',
@@ -342,6 +480,14 @@ return [
                     'shipment_date' => '2026-05-29',
                     'service_level' => '標準宅配',
                 ],
+                'processed' => [
+                    'tracking_number' => '標籤 #:job（第 :page 頁）',
+                    'carrier' => '已正規化物流標籤',
+                    'recipient_name' => '來源尺寸',
+                    'recipient_address' => ':width × :height mm（:orientation）',
+                    'unknown_orientation' => '未知方向',
+                    'service_level' => '輸出畫布 :width × :height mm（含 5 mm 安全區）',
+                ],
             ],
             'picking_list' => [
                 'fields' => [
@@ -371,6 +517,10 @@ return [
             'logistics_labels' => [
                 'title' => '物流標籤',
                 'subtitle' => '標準化並列印 Shopee 物流標籤。',
+                'list' => [
+                    'default_title' => '物流標籤 #:id',
+                    'subtitle' => '第 :page 頁 · :status · :date',
+                ],
             ],
             'picking_list' => [
                 'title' => '揀貨單',
@@ -385,6 +535,8 @@ return [
 
     'flash' => [
         'upload_received' => '檔案已成功接收，即將開始處理。',
+        'upload_regenerating' => '已開始重新產生，處理完成後 A4 輸出將更新。',
+        'upload_deleted' => '上傳已成功刪除。',
         'profile_updated' => '您的個人資料已更新。',
         'locale_updated' => '語言偏好已更新。',
         'theme_updated' => '主題偏好已更新。',
@@ -448,6 +600,7 @@ return [
     ],
 
     'delivery_labels' => [
+        'upload_placeholder_address' => '已上傳檔案 — 處理完成後將顯示地址預覽。',
         'preview' => [
             'remarks_heading' => '備註',
             'shrunk_hint' => '地址已自動縮小以符合標籤',
@@ -457,6 +610,9 @@ return [
             'upload_label' => '匯入配送標籤（CSV）',
             'choose_file' => '選擇 CSV 檔案',
             'upload_hint' => '必要欄位：收件人及/或地址。選填：備註、追蹤號碼、物流商。',
+            'sample_download_intro' => '下載範例 CSV，了解匯入所需的欄位結構與資料格式。',
+            'sample_download' => '下載範例 CSV',
+            'sample_columns' => '欄位：收件人、地址（必填）；備註、追蹤號碼、物流商（選填）。',
             'uploading' => '正在匯入 CSV…',
             'list_empty' => '尚無配送標籤。請上傳 CSV 開始使用。',
             'list_subtitle' => '標籤 #:id',
@@ -496,5 +652,82 @@ return [
         ],
     ],
 
+    'pdf' => [
+        'modes' => [
+            'thermal_label' => '熱感物流標籤',
+            'order_pdf_merge' => '訂單明細合併',
+            'delivery_label' => '配送標籤',
+            'picking_list_export' => '揀貨單匯出',
+        ],
+        'status' => [
+            'pending' => '待處理',
+            'validated' => '已驗證',
+            'boundaries_detected' => '已偵測邊界',
+            'canvas_prepared' => '畫布已就緒',
+            'normalization_deferred' => '正規化已排程',
+            'completed' => '框架處理完成',
+            'failed' => '失敗',
+        ],
+        'validation' => [
+            'valid' => '來源檔案已通過框架驗證。',
+            'missing_source' => '未提供可處理的來源檔案。',
+            'file_not_readable' => '無法讀取來源檔案。',
+            'file_too_large' => '來源檔案超過允許的上傳大小。',
+            'unsupported_mode' => '此處理模式尚未啟用。',
+            'invalid_pdf' => '無法解析 PDF 檔案。',
+            'page_limit_exceeded' => 'PDF 頁數超過上限。',
+            'a4_rejected' => '不支援 A4 尺寸物流標籤進行熱感處理。',
+            'thermal_size_rejected' => '此標籤尺寸不支援熱感物流處理。',
+            'thermal_size_rejected_detail' => '第 :page 頁尺寸為 :width × :height mm，超出支援的熱感範圍。',
+            'aspect_ratio_warning' => '素材比例與目標畫布偏差過大。',
+        ],
+        'orientation' => [
+            'portrait' => '直向',
+            'landscape' => '橫向',
+        ],
+        'normalization' => [
+            'deferred' => 'PDF 正規化將於後續處理階段執行。',
+            'deferred_for_mode' => ':mode 的正規化尚未實作。',
+            'not_implemented' => 'PDF 正規化尚未實作。',
+            'failed' => 'PDF 正規化失敗。:detail',
+            'thermal_page_complete' => '熱感標籤頁面已正規化至列印畫布。',
+            'logistics_complete' => '已完成 :count 頁物流標籤正規化，可供下載。',
+        ],
+        'processing' => [
+            'framework_complete' => 'PDF 框架管線已成功完成。',
+            'complete' => 'PDF 處理已成功完成。',
+        ],
+        'errors' => [
+            'pipeline_failed' => 'PDF 處理無法完成。:detail',
+            'stage_failed' => 'PDF 處理在 :stage 階段停止。:detail',
+            'configuration_invalid' => 'PDF 引擎設定無效。:detail',
+        ],
+        'boundary' => [
+            'unreadable' => '無法讀取 :path 的 PDF 頁面邊界。',
+            'invalid_page' => '第 :page 頁無效（文件共 :total 頁）。',
+        ],
+        'storage' => [
+            'directory_failed' => '無法建立暫存目錄 :path。',
+            'file_missing' => '找不到暫存檔案 :path。',
+        ],
+    ],
+
+    'print_jobs' => [
+        'status' => [
+            'pending' => '待處理',
+            'processing' => '處理中',
+            'ready' => '就緒',
+            'failed' => '失敗',
+            'downloaded' => '已下載',
+            'shredded' => '已銷毀',
+        ],
+        'actions' => [
+            'download' => '下載正規化 PDF',
+        ],
+        'errors' => [
+            'expired' => '此正規化標籤已過期。',
+            'file_missing' => '正規化 PDF 已不可用。',
+        ],
+    ],
+
 ];
-    

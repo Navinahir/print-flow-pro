@@ -34,7 +34,6 @@ class UploadTest extends TestCase
         Merchant::query()->create([
             'user_id' => $user->id,
             'name' => 'Test Shop',
-            'email' => $user->email,
         ]);
 
         $response = $this->actingAs($user)->post(route('uploads.store'), [

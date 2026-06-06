@@ -30,7 +30,6 @@ class UploadPreviewIntegrationTest extends TestCase
         Merchant::query()->create([
             'user_id' => $user->id,
             'name' => 'Test Shop',
-            'email' => $user->email,
         ]);
 
         $job = UploadJob::factory()->create([
@@ -53,7 +52,6 @@ class UploadPreviewIntegrationTest extends TestCase
         Merchant::query()->create([
             'user_id' => $user->id,
             'name' => 'Test Shop',
-            'email' => $user->email,
         ]);
 
         $job = UploadJob::factory()->create([

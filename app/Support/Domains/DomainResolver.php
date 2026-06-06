@@ -15,15 +15,19 @@ class DomainResolver
 
     public function resolve(Request $request): DomainContext
     {
-        $host = $this->normalizeHost($request->getHost(), $request->getPort());
+        $host = $this->normalizeHost(
+            $request->getHost(),
+            $request->getPort(),
+            $request->getScheme(),
+        );
 
-        $marketingDomain = $this->normalizeConfiguredHost((string) config('domains.marketing.domain'));
-        if ($host === $marketingDomain) {
+        $marketingDomain = $this->normalizeConfiguredHost($this->domainConfiguration->effectiveMarketingHost());
+        if ($marketingDomain !== '' && $host === $marketingDomain) {
             return $this->marketingContext($host);
         }
 
-        $adminDomain = $this->normalizeConfiguredHost((string) config('domains.admin.domain'));
-        if ($host === $adminDomain) {
+        $adminDomain = $this->normalizeConfiguredHost($this->domainConfiguration->effectiveAdminHost());
+        if ($adminDomain !== '' && $host === $adminDomain) {
             return $this->adminContext($host);
         }
 
@@ -52,8 +56,8 @@ class DomainResolver
         }
 
         return match ($surface) {
-            DomainContext::SURFACE_MARKETING => $this->domainForRouting((string) config('domains.marketing.domain')),
-            DomainContext::SURFACE_ADMIN => $this->domainForRouting((string) config('domains.admin.domain')),
+            DomainContext::SURFACE_MARKETING => $this->domainForRouting($this->domainConfiguration->effectiveMarketingHost()),
+            DomainContext::SURFACE_ADMIN => $this->domainForRouting($this->domainConfiguration->effectiveAdminHost()),
             DomainContext::SURFACE_MERCHANT => $this->merchantRouteDomain($regionKey),
             default => null,
         };
@@ -143,13 +147,24 @@ class DomainResolver
             return null;
         }
 
-        return $domain;
+        return $this->normalizeConfiguredHost($domain);
     }
 
     public function usesPortBasedLocalHost(string $domain): bool
     {
-        return config('domains.environment') === 'local'
-            && str_contains($domain, ':');
+        if (! config('domains.port_routing', false)) {
+            return false;
+        }
+
+        $domain = strtolower(trim($domain));
+
+        if (! str_contains($domain, ':')) {
+            return false;
+        }
+
+        $hostPart = explode(':', $domain, 2)[0];
+
+        return in_array($hostPart, ['localhost', '127.0.0.1'], true);
     }
 
     private function marketingContext(string $host): DomainContext
@@ -160,7 +175,7 @@ class DomainResolver
             countryCode: null,
             locale: (string) config('app.locale', 'en'),
             host: $host,
-            domain: (string) config('domains.marketing.domain'),
+            domain: $this->domainConfiguration->effectiveMarketingHost(),
             active: true,
         );
     }
@@ -173,7 +188,7 @@ class DomainResolver
             countryCode: null,
             locale: (string) config('app.locale', 'en'),
             host: $host,
-            domain: (string) config('domains.admin.domain'),
+            domain: $this->domainConfiguration->effectiveAdminHost(),
             active: true,
         );
     }
@@ -194,13 +209,14 @@ class DomainResolver
         );
     }
 
-    private function normalizeHost(string $host, ?int $port): string
+    private function normalizeHost(string $host, ?int $port, ?string $scheme = null): string
     {
         $host = strtolower(trim($host));
         $host = $this->aliasLoopbackHost($host);
+        $host = $this->stripStandardPortSuffix($host);
 
         if ($port !== null && ! $this->hostIncludesPort($host)) {
-            $defaultPort = $this->defaultPortForScheme();
+            $defaultPort = $this->defaultPortForScheme($scheme);
             if ($port !== $defaultPort) {
                 return "{$host}:{$port}";
             }
@@ -211,7 +227,24 @@ class DomainResolver
 
     private function normalizeConfiguredHost(string $domain): string
     {
-        return $this->aliasLoopbackHost(strtolower(trim($domain)));
+        $domain = $this->aliasLoopbackHost(strtolower(trim($domain)));
+
+        return $this->stripStandardPortSuffix($domain);
+    }
+
+    private function stripStandardPortSuffix(string $host): string
+    {
+        if (! str_contains($host, ':') || str_starts_with($host, '[')) {
+            return $host;
+        }
+
+        [$name, $port] = explode(':', $host, 2);
+
+        if (in_array((int) $port, [80, 443], true)) {
+            return $name;
+        }
+
+        return $host;
     }
 
     private function aliasLoopbackHost(string $host): string
@@ -228,8 +261,8 @@ class DomainResolver
         return str_contains($host, ':');
     }
 
-    private function defaultPortForScheme(): int
+    private function defaultPortForScheme(?string $scheme): int
     {
-        return 80;
+        return strtolower((string) $scheme) === 'https' ? 443 : 80;
     }
 }

@@ -87,55 +87,6 @@ export function registerMerchantShell() {
     }));
 }
 
-export function registerUploadForm(initialType = '') {
-    Alpine.data('uploadForm', () => ({
-        type: initialType,
-        dragging: false,
-        submitting: false,
-        fileList: [],
-
-        get accept() {
-            if (this.type === 'picking_list') {
-                return '.csv,.xlsx,.xls';
-            }
-
-            if (this.type) {
-                return '.pdf';
-            }
-
-            return '.pdf,.csv,.xlsx,.xls';
-        },
-
-        handleSelect(event) {
-            this.fileList = Array.from(event.target.files);
-        },
-
-        handleDrop(event) {
-            this.dragging = false;
-            const input = document.getElementById('merchant-upload-files');
-
-            if (! input) {
-                return;
-            }
-
-            input.files = event.dataTransfer.files;
-            this.fileList = Array.from(input.files);
-        },
-
-        formatSize(bytes) {
-            if (bytes < 1024) {
-                return `${bytes} B`;
-            }
-
-            if (bytes < 1048576) {
-                return `${(bytes / 1024).toFixed(1)} KB`;
-            }
-
-            return `${(bytes / 1048576).toFixed(1)} MB`;
-        },
-    }));
-}
-
 export function startAlpine() {
     window.Alpine = Alpine;
     Alpine.start();

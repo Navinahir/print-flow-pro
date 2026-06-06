@@ -40,4 +40,26 @@ class DomainSettingRepository implements DomainSettingRepositoryInterface
             ->with(['locales', 'features'])
             ->first();
     }
+
+    public function findInfrastructureBySurface(string $surface): ?DomainSetting
+    {
+        return DomainSetting::query()
+            ->where('surface', $surface)
+            ->first();
+    }
+
+    /**
+     * @return Collection<int, DomainSetting>
+     */
+    public function allInfrastructureSettings(): Collection
+    {
+        return DomainSetting::query()
+            ->whereIn('surface', [
+                DomainSetting::SURFACE_MARKETING,
+                DomainSetting::SURFACE_ADMIN,
+            ])
+            ->orderBy('sort_order')
+            ->orderBy('region_key')
+            ->get();
+    }
 }

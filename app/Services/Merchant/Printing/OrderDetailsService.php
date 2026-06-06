@@ -6,6 +6,7 @@ namespace App\Services\Merchant\Printing;
 
 use App\DTOs\Merchant\Printing\PrintingListItemData;
 use App\Enums\PrintingModule;
+use App\Enums\UploadJobType;
 use App\Models\User;
 use App\Services\Merchant\Preview\OrderDetailsPreviewService;
 
@@ -13,6 +14,7 @@ class OrderDetailsService extends PrintingModuleService
 {
     public function __construct(
         private readonly OrderDetailsPreviewService $previewService,
+        private readonly UploadJobListMapper $uploadJobListMapper,
     ) {}
 
     public function module(): PrintingModule
@@ -25,6 +27,12 @@ class OrderDetailsService extends PrintingModuleService
      */
     protected function listItemsForUser(User $user): array
     {
+        $fromUploads = $this->uploadJobListMapper->listItemsFor($user, UploadJobType::OrderPdf);
+
+        if ($fromUploads !== []) {
+            return $fromUploads;
+        }
+
         $previewOne = $this->previewService->buildSamplePreview('1')->toArray();
         $previewTwo = $this->previewService->buildSamplePreview('2')->toArray();
 

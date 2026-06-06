@@ -13,10 +13,13 @@ use App\Filament\Resources\MerchantResource\Pages\EditMerchant;
 use App\Filament\Resources\MerchantResource\Pages\ListMerchants;
 use App\Filament\Support\FormFields;
 use App\Models\Merchant;
+use App\Models\User;
 use BackedEnum;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Illuminate\Validation\Rules\Password;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
@@ -24,6 +27,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rule;
 use UnitEnum;
 
 class MerchantResource extends Resource
@@ -43,10 +47,43 @@ class MerchantResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
+            FormFields::applyCommon(
+                TextInput::make('email'),
+                'Email',
+                required: true,
+                placeholder: 'merchant@shop.example',
+            )
+                ->email()
+                ->maxLength(255)
+                ->rules(fn (?Merchant $record): array => [
+                    'required',
+                    'string',
+                    'lowercase',
+                    'email',
+                    'max:255',
+                    Rule::unique(User::class, 'email')->ignore($record?->user_id),
+                ]),
+            FormFields::applyCommon(
+                TextInput::make('password'),
+                'Password',
+                required: true,
+                placeholder: 'Set login password',
+            )
+                ->password()
+                ->revealable()
+                ->confirmed()
+                ->rule(Password::defaults())
+                ->visible(fn (?string $operation): bool => $operation === 'create'),
+            FormFields::applyCommon(
+                TextInput::make('password_confirmation'),
+                'Confirm password',
+                required: true,
+            )
+                ->password()
+                ->revealable()
+                ->visible(fn (?string $operation): bool => $operation === 'create'),
             FormFields::text('name', 'Merchant name', required: true, placeholder: 'e.g. Acme Shopee Store', maxLength: 255),
             FormFields::text('shop_name', 'Shop name', placeholder: 'Display name on marketplace', maxLength: 255),
-            FormFields::text('email', 'Contact email', placeholder: 'merchant@example.com', maxLength: 255)
-                ->email(),
             FormFields::text('phone', 'Phone', placeholder: '+65 9123 4567', maxLength: 30)
                 ->tel(),
             FormFields::applyCommon(
@@ -58,10 +95,6 @@ class MerchantResource extends Resource
                 Select::make('billing_plan_id'),
                 'Billing plan',
             )->relationship('billingPlan', 'name')->searchable()->preload()->nullable()->native(false),
-            FormFields::applyCommon(
-                Select::make('user_id'),
-                'Linked user account',
-            )->relationship('user', 'email')->searchable()->preload()->nullable()->native(false),
             FormFields::applyCommon(
                 DateTimePicker::make('onboarded_at'),
                 'Onboarded at',
@@ -79,9 +112,14 @@ class MerchantResource extends Resource
                 TextColumn::make('shop_name')
                     ->searchable()
                     ->toggleable(),
-                TextColumn::make('email')
+                TextColumn::make('user.email')
+                    ->label('Email')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('creator.name')
+                    ->label('Created by')
+                    ->sortable()
+                    ->toggleable(),
                 TextColumn::make('billingPlan.name')
                     ->label('Plan')
                     ->sortable()
@@ -119,7 +157,7 @@ class MerchantResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['billingPlan', 'user']);
+        return parent::getEloquentQuery()->with(['billingPlan', 'user', 'creator']);
     }
 
     public static function canViewAny(): bool

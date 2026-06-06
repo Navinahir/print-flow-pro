@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -21,12 +22,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $brand_favicon
  * @property array<string, mixed>|null $settings
  * @property int $sort_order
- * @property-read \Illuminate\Database\Eloquent\Collection<int, DomainLocale> $locales
- * @property-read \Illuminate\Database\Eloquent\Collection<int, DomainFeature> $features
+ * @property-read Collection<int, DomainLocale> $locales
+ * @property-read Collection<int, DomainFeature> $features
  */
 class DomainSetting extends Model
 {
+    public const SURFACE_MARKETING = 'marketing';
+
     public const SURFACE_MERCHANT = 'merchant';
+
+    public const SURFACE_ADMIN = 'admin';
 
     /**
      * @var list<string>

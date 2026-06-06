@@ -4,6 +4,9 @@ use App\Http\Controllers\Merchant\DashboardController;
 use App\Http\Controllers\Merchant\LocaleController;
 use App\Http\Controllers\Merchant\ProfileController;
 use App\Http\Controllers\Merchant\ThemeController;
+use App\Http\Controllers\Merchant\PdfUploadDownloadController;
+use App\Http\Controllers\Merchant\PdfUploadPreviewController;
+use App\Http\Controllers\Merchant\PrintJobRegenerateController;
 use App\Http\Controllers\Merchant\UploadController;
 use App\Http\Controllers\Merchant\UploadPreviewController;
 use Illuminate\Support\Facades\Route;
@@ -17,6 +20,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/uploads/create', [UploadController::class, 'create'])->name('uploads.create');
     Route::post('/uploads', [UploadController::class, 'store'])->name('uploads.store');
     Route::get('/uploads/{upload}', [UploadController::class, 'show'])->name('uploads.show');
+    Route::delete('/uploads/{upload}', [UploadController::class, 'destroy'])->name('uploads.destroy');
+    Route::post('/uploads/{upload}/regenerate', [UploadController::class, 'regenerate'])->name('uploads.regenerate');
+    Route::post('/uploads/{upload}/print-jobs/{printJob}/regenerate', PrintJobRegenerateController::class)->name('uploads.print_jobs.regenerate');
+    Route::get('/uploads/{upload}/pdf-uploads/{pdfUpload}/preview', PdfUploadPreviewController::class)->name('uploads.pdf.preview');
+    Route::get('/uploads/{upload}/pdf-uploads/{pdfUpload}/download', PdfUploadDownloadController::class)->name('uploads.pdf.download');
     Route::post('/uploads/{upload}/preview', [UploadPreviewController::class, 'show'])->name('uploads.preview.show');
 });
 

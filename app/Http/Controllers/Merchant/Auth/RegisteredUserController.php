@@ -10,6 +10,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\Merchant;
 use App\Models\User;
+use App\Support\CountryScope;
+use App\Support\MerchantConfig;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -37,8 +39,10 @@ class RegisteredUserController extends Controller
 
         Merchant::query()->create([
             'user_id' => $user->id,
+            'country_code' => CountryScope::currentCountryCode()
+                ?? MerchantConfig::get('country_code')
+                ?? 'TW',
             'name' => $validated['name'],
-            'email' => $validated['email'],
             'status' => MerchantStatus::Active,
             'onboarded_at' => now(),
         ]);

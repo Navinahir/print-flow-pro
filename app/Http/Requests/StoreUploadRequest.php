@@ -39,6 +39,7 @@ class StoreUploadRequest extends FormRequest
                 'file',
                 File::types($extensions)->max($maxKb),
             ],
+            'thermal_combined_output' => ['nullable', 'boolean'],
         ];
     }
 
@@ -63,5 +64,10 @@ class StoreUploadRequest extends FormRequest
     public function uploadType(): UploadJobType
     {
         return UploadJobType::from((string) $this->validated('type'));
+    }
+
+    public function thermalCombinedOutput(): bool
+    {
+        return $this->boolean('thermal_combined_output', true);
     }
 }

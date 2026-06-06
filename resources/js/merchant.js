@@ -1,9 +1,11 @@
 import './merchant/ajax.js';
 import { initFlashToasts } from './merchant/toast.js';
 import { initDeleteAccountConfirmation } from './merchant/sweetalert.js';
-import { registerMerchantShell, registerUploadForm, startAlpine } from './merchant/shell.js';
+import { registerMerchantShell, startAlpine } from './merchant/shell.js';
+import { registerUploadForm } from './merchant/modules/uploads.js';
 import { registerPrintingWorkspace } from './merchant/modules/printing.js';
 import { registerUploadPreview } from './merchant/modules/upload-preview.js';
+import { registerUploadIndex } from './merchant/modules/upload-index.js';
 import { registerMerchantPreview } from './merchant/preview/index.js';
 import { initMerchantTheme, registerMerchantThemeSwitch } from './merchant/theme.js';
 import { bootstrapMerchantThemeFromStorage, initMerchantLocale } from './merchant/locale.js';
@@ -19,6 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     registerProfilePhotoUpload();
     registerPrintingWorkspace();
     registerUploadPreview();
+    registerUploadIndex();
     registerMerchantPreview();
 
     const uploadRoot = document.getElementById('merchant-upload-form-root');

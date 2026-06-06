@@ -16,6 +16,13 @@ final readonly class LogisticsLabelsPreviewData implements PrintingPreviewPayloa
         public string $recipientAddress,
         public string $shipmentDate,
         public ?string $serviceLevel = null,
+        public ?string $downloadUrl = null,
+        public ?float $sourceWidthMm = null,
+        public ?float $sourceHeightMm = null,
+        public ?float $outputWidthMm = null,
+        public ?float $outputHeightMm = null,
+        public ?int $pageNumber = null,
+        public ?string $printJobStatus = null,
     ) {}
 
     public function type(): PrintingPreviewType
@@ -36,6 +43,13 @@ final readonly class LogisticsLabelsPreviewData implements PrintingPreviewPayloa
             'recipient_address' => $this->recipientAddress,
             'shipment_date' => $this->shipmentDate,
             'service_level' => $this->serviceLevel,
+            'download_url' => $this->downloadUrl,
+            'source_width_mm' => $this->sourceWidthMm,
+            'source_height_mm' => $this->sourceHeightMm,
+            'output_width_mm' => $this->outputWidthMm,
+            'output_height_mm' => $this->outputHeightMm,
+            'page_number' => $this->pageNumber,
+            'print_job_status' => $this->printJobStatus,
         ];
     }
 }

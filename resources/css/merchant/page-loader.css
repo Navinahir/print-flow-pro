@@ -1,6 +1,8 @@
 @layer components {
     .merchant-spinner {
-        @apply h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-amber-600 dark:border-slate-700 dark:border-t-amber-500;
+        @apply h-10 w-10 animate-spin border-4 border-solid border-slate-200 border-t-amber-600 dark:border-slate-700 dark:border-t-amber-500;
+        border-radius: 50%;
+        box-sizing: border-box;
     }
 
     .merchant-page-loader {

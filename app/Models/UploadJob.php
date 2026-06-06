@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Enums\UploadJobType;
 use App\Enums\UploadStatus;
+use App\Models\Concerns\BelongsToCountry;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class UploadJob extends Model
 {
+    use BelongsToCountry;
     use HasFactory;
 
     /**
@@ -22,6 +24,7 @@ class UploadJob extends Model
      */
     protected $fillable = [
         'merchant_id',
+        'country_code',
         'user_id',
         'uploaded_by',
         'type',
@@ -70,6 +73,14 @@ class UploadJob extends Model
     public function uploadedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'uploaded_by');
+    }
+
+    /**
+     * @return HasMany<PrintJob, $this>
+     */
+    public function printJobs(): HasMany
+    {
+        return $this->hasMany(PrintJob::class);
     }
 
     /**

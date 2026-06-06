@@ -9,6 +9,8 @@ use App\Http\Controllers\Merchant\Printing\LogisticsLabelsController;
 use App\Http\Controllers\Merchant\Printing\OrderDetailsController;
 use App\Http\Controllers\Merchant\Printing\PickingListController;
 use App\Http\Controllers\Merchant\Printing\PrintingPreviewController;
+use App\Http\Controllers\Merchant\Printing\PrintJobDownloadController;
+use App\Http\Controllers\Merchant\Printing\PrintJobPreviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'verified'])
@@ -32,6 +34,14 @@ Route::middleware(['auth', 'verified'])
         Route::get('logistics-labels', [LogisticsLabelsController::class, 'index'])
             ->middleware('printing.module:logistics_labels')
             ->name('logistics_labels.index');
+
+        Route::get('logistics-labels/print-jobs/{printJob}/download', PrintJobDownloadController::class)
+            ->middleware('printing.module:logistics_labels')
+            ->name('logistics_labels.download');
+
+        Route::get('logistics-labels/print-jobs/{printJob}/preview', PrintJobPreviewController::class)
+            ->middleware('printing.module:logistics_labels')
+            ->name('logistics_labels.preview');
 
         Route::get('picking-list', [PickingListController::class, 'index'])
             ->middleware('printing.module:picking_list')

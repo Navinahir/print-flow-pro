@@ -29,6 +29,7 @@ use App\View\Components\Merchant\Preview\PrintButton;
 use App\View\Components\Merchant\ThemeSwitch;
 use App\View\Components\Merchant\UserAvatar;
 use App\View\Components\Merchant\UserMenu;
+use App\View\Composers\MarketingComposer;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
@@ -36,6 +37,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -68,6 +70,9 @@ class AppServiceProvider extends ServiceProvider
         $this->registerDomainConfigurationCacheInvalidation();
         $this->registerMerchantPreviewComponents();
         $this->registerMerchantUiComponents();
+
+        View::composer('marketing.*', MarketingComposer::class);
+        View::composer('home', MarketingComposer::class);
     }
 
     private function registerMerchantUiComponents(): void

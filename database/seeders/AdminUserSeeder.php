@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Enums\MerchantStatus;
 use App\Enums\Role as RoleEnum;
+use App\Models\BillingPlan;
+use App\Models\Merchant;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -37,6 +40,22 @@ class AdminUserSeeder extends Seeder
             ],
         );
         $merchant->assignPrimaryRole(RoleEnum::Merchant);
+
+        $starterPlan = BillingPlan::query()->where('slug', 'starter')->first();
+
+        Merchant::query()->updateOrCreate(
+            ['user_id' => $merchant->id],
+            [
+                'created_by' => $admin->id,
+                'billing_plan_id' => $starterPlan?->id,
+                'country_code' => 'TW',
+                'name' => 'Demo Merchant',
+                'shop_name' => 'Demo Shop',
+                'phone' => null,
+                'status' => MerchantStatus::Active,
+                'onboarded_at' => now(),
+            ],
+        );
 
         echo '✓ Seeded users (password: '.self::DEFAULT_PASSWORD."):\n";
         echo '  - admin (admin surface only): '.self::ADMIN_DEMO_EMAIL."\n";

@@ -72,6 +72,17 @@
                 <p class="printing-preview-logistics__recipient-name" x-text="selectedPreview()?.recipient_name"></p>
                 <p class="printing-preview-logistics__recipient-address" x-text="selectedPreview()?.recipient_address"></p>
             </div>
+            <p
+                class="printing-preview-logistics__download"
+                x-show="Boolean(selectedPreview()?.download_url)"
+                x-cloak
+            >
+                <a
+                    class="merchant-btn merchant-btn--secondary merchant-btn--sm"
+                    :href="selectedPreview()?.download_url"
+                    x-text="@js(__('merchant.print_jobs.actions.download'))"
+                ></a>
+            </p>
         </div>
     </template>
 

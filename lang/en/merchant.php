@@ -13,6 +13,14 @@ return [
         'region_inactive' => 'This region is not activated yet.',
     ],
 
+    'unauthorized' => [
+        'title' => 'Access not allowed',
+        'heading' => 'You are not authorised to access this page',
+        'message' => 'This merchant workspace is only available through the authorised sign-in URL. If you need access, contact your administrator.',
+        'status' => '403 Forbidden',
+        'login_link' => 'Go to sign in',
+    ],
+
     'general' => [
         'not_available' => '—',
     ],
@@ -128,9 +136,11 @@ return [
             ],
         ],
         'stats' => [
+            'total_uploads' => 'Total uploads',
             'recent_uploads' => 'Recent uploads',
             'pending_jobs' => 'Pending jobs',
             'completed_jobs' => 'Completed jobs',
+            'no_recent' => 'No uploads yet — start with a new upload.',
         ],
     ],
 
@@ -140,7 +150,7 @@ return [
         'show_title' => 'Upload #:id',
         'subtitle' => 'Manage your file uploads and processing status',
         'create_subtitle' => 'Select a type and drop your files',
-        'show_subtitle' => 'Upload details and file list',
+        'show_subtitle' => 'Review uploaded files, processing results, and download print-ready output',
         'new_upload' => 'New upload',
         'back_to_history' => 'Back to history',
         'empty' => [
@@ -157,11 +167,13 @@ return [
             'date' => 'Date',
             'actions' => 'Actions',
             'view' => 'View',
+            'delete' => 'Delete',
         ],
         'form' => [
             'type_label' => 'Upload type',
             'type_placeholder' => 'Select type…',
-            'accepted_pdf' => 'Accepted: PDF',
+            'accepted_pdf' => 'Accepted: PDF only',
+            'accepted_delivery' => 'Accepted: PDF, CSV, XLS, XLSX',
             'accepted_spreadsheet' => 'Accepted: CSV, XLS, XLSX',
             'dropzone_title' => 'Drag & drop files here, or browse',
             'dropzone_browse' => 'browse',
@@ -169,19 +181,138 @@ return [
             'uploading' => 'Uploading… please wait.',
             'cancel' => 'Cancel',
             'submit' => 'Upload files',
+            'thermal_output_heading' => 'Output files',
+            'thermal_output_hint' => 'When uploading multiple PDFs, choose one combined A4 output or a separate output file per uploaded PDF.',
+            'thermal_output_combined' => 'One combined output file',
+            'thermal_output_separate' => 'Separate output file per upload',
+        ],
+        'delete' => [
+            'confirm_title' => 'Delete this upload?',
+            'confirm_text' => 'This removes the upload record, all generated outputs, and uploaded source files. This cannot be undone.',
+            'confirm_button' => 'Delete upload',
+            'success' => 'Upload deleted successfully.',
         ],
         'detail' => [
             'type' => 'Type',
             'status' => 'Status',
             'uploaded_by' => 'Uploaded by',
             'file_count' => 'File count',
-            'pdf_files' => 'PDF files',
+            'uploaded_at' => 'Uploaded',
+            'last_updated' => 'Last updated',
+            'pdf_files' => 'Uploaded PDF files',
+            'pdf_files_hint' => 'Original files you submitted for this job.',
             'spreadsheet_files' => 'Spreadsheet files',
             'preview_placeholder' => 'Preview is shown in the panel on the right.',
+            'validation_failed' => 'Processing failed',
+            'validation_failed_hint' => 'Check the file format and size, download a reference sample from the upload page, then try again.',
+            'print_outputs' => 'Print-ready A4 sheets',
+            'print_outputs_hint' => 'Normalized output for download and printing. Single labels use one A4 page; multiple labels are arranged up to four per A4 sheet.',
+            'sheet_title' => 'A4 sheet :number',
+            'layout_single' => '1 label · single layout',
+            'layout_multi' => ':count labels · 2×2 grid',
+            'a4_size_label' => ':width×:height mm A4',
+            'source_unknown' => 'Source labels unavailable',
+            'source_file' => 'Uploaded file',
+            'source_page_ref' => ':file (page :page)',
+            'source_labels_heading' => 'Labels on this sheet',
+            'page_label' => 'Page :page',
+            'processing_result' => 'Processing result',
+            'processing_result_hint_single' => ':labels thermal label from :files file(s) → :sheets A4 sheet ready.',
+            'processing_result_hint_multi' => ':labels thermal labels from :files file(s) → :sheets A4 sheet(s) ready (up to 4 labels per sheet).',
+            'labels_count' => ':count labels',
+            'sheets_count' => ':count A4 sheets',
+            'action_view' => 'View file',
+            'action_preview' => 'Preview',
+            'action_download' => 'Download',
+            'action_print' => 'Print',
+            'action_regenerate' => 'Regenerate',
+            'regenerating' => 'Regenerating…',
+            'regenerate_success' => 'Output regenerated successfully.',
+            'output_file_sheet_title' => ':file (sheet :number)',
+            'view_modal_hint' => 'PDF preview — use download or print from the toolbar if needed.',
+        ],
+        'errors' => [
+            'source_missing' => 'The uploaded file is no longer available.',
+            'regenerate_unsupported' => 'Regeneration is only available for thermal label uploads.',
+            'regenerate_not_ready' => 'This upload cannot be regenerated while it is still processing.',
+            'regenerate_missing_sources' => 'Original uploaded files are missing, so this job cannot be regenerated.',
+        ],
+        'guides' => [
+            'heading' => 'Upload instructions',
+            'select_type_hint' => 'Choose an upload type on the left to see file requirements, rejected formats, and reference samples here.',
+            'rejections_heading' => 'Will be rejected',
+            'samples_heading' => 'Reference files',
+            'samples_intro' => 'Download a sample file to compare layout and size before uploading.',
+            'sample_download' => 'Download sample',
+            'sample_preview' => 'Preview sample',
+            'sample_preview_close' => 'Close preview',
+            'sample_preview_modal_hint' => 'Reference file preview',
+            'sample_preview_loading' => 'Loading preview…',
+            'sample_preview_error' => 'Could not load preview. Please download the file instead.',
+            'sample_preview_unavailable' => 'In-browser preview is not available for this file type. Use the download icon to open it locally.',
+            'thermal_label' => [
+                'instructions' => [
+                    'Upload Shopee thermal shipping label PDFs exported from Seller Centre.',
+                    'Supported size: about 10×15 cm (100×150 mm) — portrait or landscape.',
+                    'Each PDF page becomes one normalized 150×100 mm print label.',
+                    'You may upload multiple PDF files in one job; every page is processed separately.',
+                ],
+                'rejections' => [
+                    'A4 batch shipping labels (210×297 mm) are not supported.',
+                    'Labels smaller than 90 mm or larger than 160 mm on the long side.',
+                    'Damaged, password-protected, or non-PDF files.',
+                ],
+                'samples' => [
+                    'single' => 'Single-page thermal label',
+                    'single_hint' => 'One label per file — preview shows one print output.',
+                    'multipage' => 'Multi-page thermal label',
+                    'multipage_hint' => 'Several labels in one PDF — each page becomes a separate print item.',
+                ],
+            ],
+            'order_pdf' => [
+                'instructions' => [
+                    'Upload Shopee order detail PDFs exported from Seller Centre.',
+                    'PDF format only. Multiple order files may be uploaded together.',
+                ],
+                'rejections' => [
+                    'Spreadsheet or image files instead of PDF.',
+                ],
+                'samples' => [
+                    'a' => 'Order PDF sample A',
+                    'b' => 'Order PDF sample B',
+                ],
+            ],
+            'picking_list' => [
+                'instructions' => [
+                    'Upload picking list spreadsheets exported from your warehouse or Shopee tools.',
+                    'Accepted formats: CSV, XLS, XLSX.',
+                ],
+                'rejections' => [
+                    'PDF files for picking list uploads.',
+                ],
+                'samples' => [
+                    'a' => 'Picking list spreadsheet A',
+                    'b' => 'Picking list spreadsheet B',
+                ],
+            ],
+            'delivery_label' => [
+                'instructions' => [
+                    'Upload delivery address data as CSV or Excel, or a prepared delivery label PDF.',
+                    'Required columns for spreadsheets: recipient name and address.',
+                ],
+                'rejections' => [
+                    'Spreadsheets missing recipient or address columns.',
+                ],
+                'samples' => [
+                    'csv' => 'Sample CSV (locale columns)',
+                    'xlsx' => 'Sample address spreadsheet (XLSX)',
+                ],
+            ],
         ],
         'preview' => [
-            'heading' => 'Upload preview',
-            'description' => ':width×:height mm print preview for this upload job.',
+            'heading' => 'Output preview',
+            'description' => ':width×:height mm normalized output preview.',
+            'description_pdf' => 'Live PDF preview of the selected A4 print sheet.',
             'refresh' => 'Refresh preview',
             'refreshing' => 'Refreshing…',
             'retry' => 'Try again',
@@ -189,6 +320,11 @@ return [
             'error_title' => 'Could not load preview',
             'empty_title' => 'Preview not ready',
             'empty_description' => 'Processing has not produced a printable preview for this job yet.',
+            'processing' => 'Processing your files… this page will refresh automatically.',
+            'processing_failed' => 'Processing failed. See the error message below.',
+            'select_label' => 'Select A4 sheet',
+            'print_job_subtitle' => 'Sheet :page · :width×:height mm A4',
+            'pdf_loading' => 'Loading PDF preview…',
         ],
         'status' => [
             'pending' => 'Pending',
@@ -274,6 +410,8 @@ return [
 
     'printing' => [
         'section_title' => 'Printing modules',
+        'upload_job_subtitle' => 'Job #:id · :status · :date',
+        'upload_job_remarks' => 'Upload job #:id',
         'dashboard_description' => 'Choose a module to preview labels, orders, and picking lists before printing.',
         'modules_available' => '{1} :count module available|[2,*] :count modules available',
         'nav_none_enabled' => 'No printing modules are enabled for this region.',
@@ -342,6 +480,14 @@ return [
                     'shipment_date' => '2026-05-29',
                     'service_level' => 'Standard home delivery',
                 ],
+                'processed' => [
+                    'tracking_number' => 'Label #:job (page :page)',
+                    'carrier' => 'Normalized logistics label',
+                    'recipient_name' => 'Source dimensions',
+                    'recipient_address' => ':width × :height mm (:orientation)',
+                    'unknown_orientation' => 'Unknown orientation',
+                    'service_level' => 'Output canvas :width × :height mm with 5 mm safe zone',
+                ],
             ],
             'picking_list' => [
                 'fields' => [
@@ -371,6 +517,10 @@ return [
             'logistics_labels' => [
                 'title' => 'Logistics labels',
                 'subtitle' => 'Normalize and print Shopee logistics labels.',
+                'list' => [
+                    'default_title' => 'Logistics label #:id',
+                    'subtitle' => 'Page :page · :status · :date',
+                ],
             ],
             'picking_list' => [
                 'title' => 'Picking list',
@@ -385,6 +535,8 @@ return [
 
     'flash' => [
         'upload_received' => 'Your files were received successfully. Processing will begin shortly.',
+        'upload_regenerating' => 'Regeneration started. Your A4 sheets will update when processing completes.',
+        'upload_deleted' => 'Upload deleted successfully.',
         'profile_updated' => 'Your profile has been updated.',
         'locale_updated' => 'Language preference updated.',
         'theme_updated' => 'Theme preference updated.',
@@ -448,6 +600,7 @@ return [
     ],
 
     'delivery_labels' => [
+        'upload_placeholder_address' => 'Uploaded file — address preview available after processing.',
         'preview' => [
             'remarks_heading' => 'Remarks',
             'shrunk_hint' => 'Address auto-shrunk to fit label',
@@ -457,6 +610,9 @@ return [
             'upload_label' => 'Import delivery labels (CSV)',
             'choose_file' => 'Choose CSV file',
             'upload_hint' => 'Required columns: recipient and/or address. Optional: remarks, tracking, carrier.',
+            'sample_download_intro' => 'Download a sample CSV to see the expected column layout and data format.',
+            'sample_download' => 'Download sample CSV',
+            'sample_columns' => 'Columns: recipient, address (required); remarks, tracking number, carrier (optional).',
             'uploading' => 'Importing CSV…',
             'list_empty' => 'No delivery labels yet. Upload a CSV to get started.',
             'list_subtitle' => 'Label #:id',
@@ -493,6 +649,84 @@ return [
             'multiline_recipient' => 'Wang Jia-Hao',
             'multiline_address' => "Floor 12, No. 200, Keelung Road\nXinyi District, Taipei City 110",
             'multiline_remarks' => 'Office hours: Mon–Fri 09:00–18:00 only.',
+        ],
+    ],
+
+    'pdf' => [
+        'modes' => [
+            'thermal_label' => 'Thermal logistics label',
+            'order_pdf_merge' => 'Order details merge',
+            'delivery_label' => 'Delivery label',
+            'picking_list_export' => 'Picking list export',
+        ],
+        'status' => [
+            'pending' => 'Pending',
+            'validated' => 'Validated',
+            'boundaries_detected' => 'Boundaries detected',
+            'canvas_prepared' => 'Canvas prepared',
+            'normalization_deferred' => 'Normalization scheduled',
+            'completed' => 'Framework complete',
+            'failed' => 'Failed',
+        ],
+        'validation' => [
+            'valid' => 'Source files passed framework validation.',
+            'missing_source' => 'No source files were provided for processing.',
+            'file_not_readable' => 'A source file could not be read.',
+            'file_too_large' => 'A source file exceeds the allowed upload size.',
+            'unsupported_mode' => 'This processing mode is not enabled.',
+            'invalid_pdf' => 'The PDF file could not be parsed.',
+            'page_limit_exceeded' => 'The PDF exceeds the maximum page limit.',
+            'a4_rejected' => 'A4-sized shipping labels are not supported for thermal processing.',
+            'thermal_size_rejected' => 'This label size is not supported for thermal logistics processing.',
+            'thermal_size_rejected_detail' => 'Page :page measures :width × :height mm, which is outside the supported thermal range.',
+            'aspect_ratio_warning' => 'The asset aspect ratio deviates from the target canvas.',
+        ],
+        'orientation' => [
+            'portrait' => 'Portrait',
+            'landscape' => 'Landscape',
+        ],
+        'normalization' => [
+            'deferred' => 'PDF normalization will run in a later processing phase.',
+            'deferred_for_mode' => 'Normalization for :mode is not implemented yet.',
+            'not_implemented' => 'PDF normalization is not implemented yet.',
+            'failed' => 'PDF normalization failed. :detail',
+            'thermal_page_complete' => 'Thermal label page normalized to the print canvas.',
+            'logistics_complete' => ':count logistics label page(s) normalized and ready for download.',
+        ],
+        'processing' => [
+            'framework_complete' => 'PDF framework pipeline completed successfully.',
+            'complete' => 'PDF processing completed successfully.',
+        ],
+        'errors' => [
+            'pipeline_failed' => 'PDF processing could not be completed. :detail',
+            'stage_failed' => 'PDF processing stopped during the :stage stage. :detail',
+            'configuration_invalid' => 'PDF engine configuration is invalid. :detail',
+        ],
+        'boundary' => [
+            'unreadable' => 'Could not read PDF page boundaries for :path.',
+            'invalid_page' => 'Page :page is invalid (document has :total pages).',
+        ],
+        'storage' => [
+            'directory_failed' => 'Could not create temporary storage directory :path.',
+            'file_missing' => 'Temporary file :path was not found.',
+        ],
+    ],
+
+    'print_jobs' => [
+        'status' => [
+            'pending' => 'Pending',
+            'processing' => 'Processing',
+            'ready' => 'Ready',
+            'failed' => 'Failed',
+            'downloaded' => 'Downloaded',
+            'shredded' => 'Shredded',
+        ],
+        'actions' => [
+            'download' => 'Download normalized PDF',
+        ],
+        'errors' => [
+            'expired' => 'This normalized label has expired.',
+            'file_missing' => 'The normalized PDF is no longer available.',
         ],
     ],
 

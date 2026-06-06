@@ -42,6 +42,8 @@
     @php
         $flashMessages = [
             'upload-received' => __('merchant.flash.upload_received'),
+            'upload-regenerating' => __('merchant.flash.upload_regenerating'),
+            'upload-deleted' => __('merchant.flash.upload_deleted'),
             'profile-updated' => __('merchant.flash.profile_updated'),
             'locale-updated' => __('merchant.flash.locale_updated'),
             'theme-updated' => __('merchant.flash.theme_updated'),
@@ -49,6 +51,16 @@
         $sessionStatus = session('status');
     @endphp
 
+    @php
+        $merchantI18n = [
+            'confirm' => __('merchant.sweetalert.confirm'),
+            'cancel' => __('merchant.sweetalert.cancel'),
+            'ok' => __('merchant.sweetalert.ok'),
+            'ajaxError' => __('merchant.ajax.error_default'),
+            'ajaxNetworkError' => __('merchant.ajax.network_error'),
+            'uploadReceived' => __('merchant.flash.upload_received'),
+        ];
+    @endphp
     <div
         id="merchant-app-root"
         x-data="merchantShell"
@@ -65,6 +77,7 @@
         data-locale-url="{{ route('locale.update') }}"
         data-preview-config='@json($previewConfiguration->toArray())'
     >
+        <script>window.MerchantI18n = @json($merchantI18n);</script>
         @include('merchant.partials.mobile-nav')
         @include('merchant.partials.sidebar')
 

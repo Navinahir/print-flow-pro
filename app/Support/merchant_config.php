@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Support;
-
 use App\DTOs\Domain\MerchantDomainConfig;
-use App\Services\Domain\DomainConfigurationService;
+use App\Support\MerchantConfig;
 
 if (! function_exists('merchant_config')) {
     /**
+     * Read merchant domain configuration for the current (or resolved) region.
+     *
      * @return mixed|MerchantDomainConfig|null
      */
     function merchant_config(?string $key = null, mixed $default = null): mixed

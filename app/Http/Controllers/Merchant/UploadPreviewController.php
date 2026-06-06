@@ -20,12 +20,17 @@ class UploadPreviewController extends Controller
     {
         $this->authorize('view', $upload);
 
-        $result = $this->uploadPreviewService->resolve($upload);
+        $itemId = $request->string('item_id')->toString();
+        $itemId = $itemId !== '' ? $itemId : null;
+
+        $result = $this->uploadPreviewService->resolve($upload, $itemId);
 
         if (! $result->available || $result->preview === null) {
             return response()->json([
-                'message' => __('merchant.uploads.preview.unavailable'),
-            ], 404);
+                'message' => $result->statusMessage ?? __('merchant.uploads.preview.unavailable'),
+                'available' => false,
+                'status_message' => $result->statusMessage,
+            ], $result->statusMessage !== null ? 200 : 404);
         }
 
         return response()->json($result->toArray());

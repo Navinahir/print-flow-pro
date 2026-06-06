@@ -24,6 +24,8 @@ class DomainSettingSeeder extends Seeder
 
     public function run(): void
     {
+        $this->seedInfrastructure();
+
         $definitions = config('domains.fallback_merchants', []);
 
         foreach ($definitions as $regionKey => $definition) {
@@ -52,6 +54,42 @@ class DomainSettingSeeder extends Seeder
         }
 
         app(DomainConfigurationService::class)->forgetCache();
+    }
+
+    private function seedInfrastructure(): void
+    {
+        $definitions = config('domains.fallback_infrastructure', []);
+
+        foreach ($definitions as $surface => $definition) {
+            if (! is_array($definition)) {
+                continue;
+            }
+
+            $settings = null;
+
+            if ($surface === DomainSetting::SURFACE_ADMIN) {
+                $settings = [
+                    'path_prefix' => trim((string) ($definition['path_prefix'] ?? 'boss'), '/'),
+                ];
+            }
+
+            DomainSetting::query()->updateOrCreate(
+                ['region_key' => (string) $surface],
+                [
+                    'surface' => (string) $surface,
+                    'host' => (string) ($definition['host'] ?? ''),
+                    'country_code' => (string) ($definition['country_code'] ?? '--'),
+                    'is_active' => true,
+                    'session_cookie' => $definition['session_cookie'] ?? null,
+                    'brand_name' => (string) config('app.name', 'XY Cubic Shopee'),
+                    'brand_tagline' => null,
+                    'brand_logo' => null,
+                    'brand_favicon' => null,
+                    'settings' => $settings,
+                    'sort_order' => $surface === DomainSetting::SURFACE_MARKETING ? 0 : 100,
+                ],
+            );
+        }
     }
 
     /**
