@@ -63,13 +63,13 @@ class UploadTypeGuideService
             UploadJobType::OrderPdf => [
                 $this->sample(
                     label: (string) __('merchant.uploads.guides.order_pdf.samples.a'),
-                    assetPath: 'samples/order-pdf/sample-a.pdf',
-                    downloadName: "order-pdf-sample-a-{$suffix}.pdf",
+                    assetPath: 'samples/order-pdf/sample-a.xlsx',
+                    downloadName: "order-pdf-sample-a-{$suffix}.xlsx",
                 ),
                 $this->sample(
                     label: (string) __('merchant.uploads.guides.order_pdf.samples.b'),
-                    assetPath: 'samples/order-pdf/sample-b.pdf',
-                    downloadName: "order-pdf-sample-b-{$suffix}.pdf",
+                    assetPath: 'samples/order-pdf/sample-b.xlsx',
+                    downloadName: "order-pdf-sample-b-{$suffix}.xlsx",
                 ),
             ],
             UploadJobType::PickingList => [

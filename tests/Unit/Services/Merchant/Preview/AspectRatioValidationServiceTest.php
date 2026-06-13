@@ -36,8 +36,8 @@ class AspectRatioValidationServiceTest extends TestCase
     public static function dimensionProvider(): array
     {
         return [
-            'exact 3:2 ratio' => [1500, 1000, true],
-            'within tolerance' => [1530, 1000, true],
+            'exact 2:3 portrait ratio' => [1000, 1500, true],
+            'within tolerance' => [1020, 1500, true],
             'exceeds tolerance' => [800, 600, false],
             'invalid zero width' => [0, 1000, false],
         ];
@@ -52,7 +52,7 @@ class AspectRatioValidationServiceTest extends TestCase
 
     public function test_calculate_deviation_percent_for_exact_ratio(): void
     {
-        $deviation = $this->service->calculateDeviationPercent(1.5);
+        $deviation = $this->service->calculateDeviationPercent(100 / 150);
 
         $this->assertSame(0.0, $deviation);
     }

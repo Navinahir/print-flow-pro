@@ -16,8 +16,7 @@
             class="merchant-sidebar__brand-link"
             data-sidebar-tooltip="{{ $brandName }}"
         >
-            <x-merchant.brand-mark size="sm" />
-            <span class="merchant-sidebar__brand-text">{{ $brandName }}</span>
+            <img alt="{{ __('marketing.brand.logo_alt') }}" class="h-10 w-auto" src="{{ asset('images/logo.svg') }}" />
         </a>
     </div>
 

@@ -104,7 +104,7 @@ class FpdiDocumentAdapter
     }
 
     /**
-     * PDF templates report sizes in points; some minimal/test PDFs expose mm-like values.
+     * Template sizes follow the FPDI document unit (mm by default).
      */
     private function normalizeDimensionToMm(float $value): float
     {
@@ -112,12 +112,13 @@ class FpdiDocumentAdapter
             return 0.0;
         }
 
-        // Values above ~200 are almost certainly PDF points (A4 width ≈ 595pt).
-        if ($value > 200) {
-            return $this->pointsToMm($value);
+        $unit = (string) config('pdf.fpdi.unit', 'mm');
+
+        if ($unit === 'mm') {
+            return round($value, 2);
         }
 
-        return round($value, 2);
+        return $this->pointsToMm($value);
     }
 
     private function pointsToMm(float $points): float

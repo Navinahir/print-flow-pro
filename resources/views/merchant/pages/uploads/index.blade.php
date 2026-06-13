@@ -41,11 +41,18 @@
             {{-- Mobile card layout --}}
             <div class="space-y-3 md:hidden">
                 @foreach ($jobs as $job)
+                    @php($showUrl = route('uploads.show', $job))
                     <article class="merchant-card" data-upload-row="{{ $job->id }}">
                         <div class="flex items-start justify-between gap-3">
                             <div class="min-w-0">
-                                <p class="font-semibold text-slate-900 dark:text-slate-100">#{{ $job->id }}</p>
-                                <p class="mt-1 text-sm text-slate-600 dark:text-slate-400">{{ $job->type?->label() }}</p>
+                                <a href="{{ $showUrl }}" class="merchant-upload-index-link font-semibold text-slate-900 dark:text-slate-100">
+                                    #{{ $job->id }}
+                                </a>
+                                <p class="mt-1 text-sm">
+                                    <a href="{{ $showUrl }}" class="merchant-upload-index-link">
+                                        {{ $job->type?->label() }}
+                                    </a>
+                                </p>
                                 <p class="mt-1 text-xs text-slate-500">{{ $job->created_at?->format('M j, Y H:i') }}</p>
                             </div>
                             <div class="shrink-0 text-right">
@@ -78,9 +85,18 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
                             @foreach ($jobs as $job)
+                                @php($showUrl = route('uploads.show', $job))
                                 <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/30" data-upload-row="{{ $job->id }}">
-                                    <td class="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">#{{ $job->id }}</td>
-                                    <td class="px-4 py-3 text-slate-700 dark:text-slate-300">{{ $job->type?->label() }}</td>
+                                    <td class="px-4 py-3">
+                                        <a href="{{ $showUrl }}" class="merchant-upload-index-link font-medium text-slate-900 dark:text-slate-100">
+                                            #{{ $job->id }}
+                                        </a>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <a href="{{ $showUrl }}" class="merchant-upload-index-link">
+                                            {{ $job->type?->label() }}
+                                        </a>
+                                    </td>
                                     <td class="px-4 py-3">
                                         @include('merchant.components.upload-status-badge', ['status' => $job->status])
                                     </td>

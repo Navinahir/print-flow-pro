@@ -59,6 +59,35 @@
                 </div>
             </template>
 
+            <template x-if="samplePreviewKind === 'spreadsheet'">
+                <div class="merchant-upload-sample-modal__csv merchant-upload-sample-modal__csv--spreadsheet">
+                    <p x-show="samplePreviewLoading" x-cloak class="text-sm text-slate-500 dark:text-slate-400">
+                        {{ __('merchant.uploads.guides.sample_preview_loading') }}
+                    </p>
+                    <p x-show="samplePreviewError" x-cloak class="text-sm text-red-600 dark:text-red-400" x-text="samplePreviewError"></p>
+                    <div x-show="! samplePreviewLoading && ! samplePreviewError && samplePreviewTableHeaders.length" x-cloak class="merchant-upload-sample-modal__table-wrap">
+                        <table class="merchant-upload-sample-modal__table">
+                            <thead>
+                                <tr>
+                                    <template x-for="(header, index) in samplePreviewTableHeaders" :key="`header-${index}`">
+                                        <th x-text="header"></th>
+                                    </template>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template x-for="(row, rowIndex) in samplePreviewTableRows" :key="`row-${rowIndex}`">
+                                    <tr>
+                                        <template x-for="(cell, cellIndex) in row" :key="`cell-${rowIndex}-${cellIndex}`">
+                                            <td x-text="cell"></td>
+                                        </template>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </template>
+
             <template x-if="samplePreviewKind === 'none'">
                 <div class="merchant-upload-sample-modal__empty">
                     <p class="text-sm text-slate-600 dark:text-slate-300">{{ __('merchant.uploads.guides.sample_preview_unavailable') }}</p>
@@ -71,5 +100,6 @@
 <script>
     window.__merchantUploadSamplePreview = {
         csvError: @js(__('merchant.uploads.guides.sample_preview_error')),
+        endpoint: @js(route('uploads.samples.preview')),
     };
 </script>

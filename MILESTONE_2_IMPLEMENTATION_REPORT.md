@@ -151,4 +151,24 @@ See `TODO.md` for phased checklist.
 
 ---
 
+## Addendum — Module processors (2026-06)
+
+Subsequent to the foundation report above, the following merchant upload processors are **implemented and wired**:
+
+| Processor | Upload type | Input | Output |
+| --- | --- | --- | --- |
+| `LogisticsLabelsProcessor` | `thermal_label` | PDF | A4 sheets with normalized 100×150 mm label slots |
+| `OrderPdfProcessor` | `order_pdf` | Spreadsheet | A4 order PDF (2 orders per page) |
+| `PickingListProcessor` | `picking_list` | Spreadsheet | A4 picking sheet PDF |
+
+**Shared spreadsheet layer:** `SpreadsheetBatchRowParser`, `SpreadsheetProcessingMetadataWriter`, `CompleteUploadProcessing` (partial success + per-file metadata).
+
+**Merchant UI:** Type-specific upload detail pages (`UploadShowViewService`), per-file status, spreadsheet preview modal, regenerate with full-page overlay, combined/separate output modes.
+
+**Tests:** `OrderPdfProcessingTest`, `PickingListProcessingTest`, `LogisticsLabelsProcessingTest`, `UploadShowViewServiceTest`.
+
+**Still planned:** `DeliveryLabelsProcessor`, temp shred cron, printing workspace wiring to live upload data.
+
+---
+
 *Architecture plan: `MILESTONE_2_AUDIT.md`*

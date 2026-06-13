@@ -21,12 +21,18 @@ class PdfConfigurationService implements PdfConfigurationInterface
     public function configuration(): PdfEngineConfiguration
     {
         $preview = $this->previewConfigurationService->configuration();
+        $canvasDefaults = config('pdf.canvas', []);
+
+        $widthMm = (float) ($canvasDefaults['width_mm'] ?? $preview->widthMm);
+        $heightMm = (float) ($canvasDefaults['height_mm'] ?? $preview->heightMm);
 
         $canvas = new PdfCanvasSpec(
-            widthMm: $preview->widthMm,
-            heightMm: $preview->heightMm,
-            safeZoneInsetMm: $preview->safeZoneInsetMm,
-            aspectRatio: $preview->aspectRatio,
+            widthMm: $widthMm,
+            heightMm: $heightMm,
+            safeZoneInsetMm: (float) ($canvasDefaults['safe_zone_inset_mm'] ?? $preview->safeZoneInsetMm),
+            aspectRatio: $widthMm > 0 && $heightMm > 0
+                ? $widthMm / $heightMm
+                : (float) ($canvasDefaults['aspect_ratio'] ?? $preview->aspectRatio),
         );
 
         $validation = config('pdf.validation', []);

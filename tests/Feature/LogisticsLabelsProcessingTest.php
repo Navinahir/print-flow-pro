@@ -18,6 +18,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use setasign\Fpdi\Fpdi;
 use Tests\Support\PdfFixtureFactory;
 use Tests\TestCase;
 
@@ -78,7 +79,28 @@ class LogisticsLabelsProcessingTest extends TestCase
         $this->assertSame(297.0, $printJob->output_height_mm);
         $this->assertSame('a4_multi', $printJob->metadata['layout_mode'] ?? null);
         $this->assertSame(3, $printJob->metadata['label_count'] ?? null);
+        $this->assertSame(1, $printJob->metadata['page_count'] ?? null);
         Storage::disk('temp')->assertExists($printJob->output_path);
+    }
+
+    public function test_processes_more_than_four_labels_into_single_multi_page_output(): void
+    {
+        [, , $uploadJob] = $this->createThermalUploadJob(pages: 5);
+
+        ProcessUploadJob::dispatchSync($uploadJob->fresh());
+
+        $uploadJob->refresh();
+
+        $this->assertSame(UploadStatus::Completed, $uploadJob->status);
+        $this->assertCount(1, $uploadJob->printJobs);
+
+        $printJob = $uploadJob->printJobs->first();
+        $this->assertSame(5, $printJob->metadata['label_count'] ?? null);
+        $this->assertSame(2, $printJob->metadata['page_count'] ?? null);
+
+        $absolutePath = Storage::disk('temp')->path((string) $printJob->output_path);
+        $pdf = new Fpdi('P', 'mm');
+        $this->assertSame(2, $pdf->setSourceFile($absolutePath));
     }
 
     public function test_rejects_a4_pdf_during_processing(): void

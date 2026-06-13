@@ -96,18 +96,20 @@
             <table class="printing-preview-picking-list__table">
                 <thead>
                     <tr>
-                        <th>{{ __('merchant.printing.preview.picking_list.fields.sku') }}</th>
-                        <th>{{ __('merchant.printing.preview.picking_list.fields.item') }}</th>
-                        <th>{{ __('merchant.printing.preview.picking_list.fields.location') }}</th>
+                        <th>{{ __('merchant.printing.preview.picking_list.fields.line') }}</th>
+                        <th>{{ __('merchant.printing.preview.picking_list.fields.product_name') }}</th>
+                        <th>{{ __('merchant.printing.preview.picking_list.fields.variant_name') }}</th>
+                        <th>{{ __('merchant.printing.preview.picking_list.fields.order_sn') }}</th>
                         <th>{{ __('merchant.printing.preview.picking_list.fields.qty') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template x-for="(row, index) in selectedPreview()?.rows ?? []" :key="index">
                         <tr>
-                            <td x-text="row.sku"></td>
-                            <td x-text="row.name"></td>
-                            <td x-text="row.location"></td>
+                            <td x-text="row.line_number"></td>
+                            <td x-text="row.product_name"></td>
+                            <td x-text="row.variant_name"></td>
+                            <td x-text="row.order_sn"></td>
                             <td x-text="row.quantity"></td>
                         </tr>
                     </template>

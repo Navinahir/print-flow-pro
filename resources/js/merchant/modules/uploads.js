@@ -6,18 +6,21 @@ export function registerUploadForm(initialType = '') {
         dragging: false,
         submitting: false,
         fileList: [],
-        thermalCombinedOutput: true,
+        combinedOutput: true,
         samplePreviewOpen: false,
         samplePreviewUrl: '',
         samplePreviewLabel: '',
         samplePreviewKind: 'none',
         samplePreviewDownloadName: '',
         samplePreviewCsvText: '',
+        samplePreviewTableHeaders: [],
+        samplePreviewTableRows: [],
         samplePreviewLoading: false,
         samplePreviewError: null,
+        samplePreviewEndpoint: window.__merchantUploadSamplePreview?.endpoint ?? '/uploads/samples/preview',
 
         get accept() {
-            if (this.type === 'picking_list') {
+            if (this.type === 'picking_list' || this.type === 'order_pdf') {
                 return '.csv,.xlsx,.xls';
             }
 
@@ -25,7 +28,7 @@ export function registerUploadForm(initialType = '') {
                 return '.pdf,.csv,.xlsx,.xls';
             }
 
-            if (this.type === 'order_pdf' || this.type === 'thermal_label') {
+            if (this.type === 'thermal_label') {
                 return '.pdf';
             }
 
@@ -60,33 +63,67 @@ export function registerUploadForm(initialType = '') {
             return `${(bytes / 1048576).toFixed(1)} MB`;
         },
 
-        async openSamplePreview(url, label, kind, downloadName) {
+        async openSamplePreview(url, label, kind, downloadName, assetPath = '') {
             this.samplePreviewUrl = url;
             this.samplePreviewLabel = label;
             this.samplePreviewKind = kind;
             this.samplePreviewDownloadName = downloadName;
             this.samplePreviewCsvText = '';
+            this.samplePreviewTableHeaders = [];
+            this.samplePreviewTableRows = [];
             this.samplePreviewError = null;
-            this.samplePreviewLoading = kind === 'csv';
+            this.samplePreviewLoading = kind === 'csv' || kind === 'spreadsheet';
             this.samplePreviewOpen = true;
             document.body.classList.add('merchant-upload-sample-modal-open');
 
-            if (kind !== 'csv') {
+            if (kind === 'csv') {
+                try {
+                    const response = await fetch(url);
+
+                    if (! response.ok) {
+                        throw new Error('preview_failed');
+                    }
+
+                    this.samplePreviewCsvText = await response.text();
+                } catch {
+                    this.samplePreviewError = window.__merchantUploadSamplePreview?.csvError ?? null;
+                } finally {
+                    this.samplePreviewLoading = false;
+                }
+
                 return;
             }
 
-            try {
-                const response = await fetch(url);
+            if (kind === 'spreadsheet') {
+                if (! assetPath) {
+                    this.samplePreviewLoading = false;
+                    this.samplePreviewError = window.__merchantUploadSamplePreview?.csvError ?? null;
 
-                if (! response.ok) {
-                    throw new Error('preview_failed');
+                    return;
                 }
 
-                this.samplePreviewCsvText = await response.text();
-            } catch {
-                this.samplePreviewError = window.__merchantUploadSamplePreview?.csvError ?? null;
-            } finally {
-                this.samplePreviewLoading = false;
+                try {
+                    const endpoint = new URL(this.samplePreviewEndpoint, window.location.origin);
+                    endpoint.searchParams.set('path', assetPath);
+                    const response = await fetch(endpoint.toString(), {
+                        headers: {
+                            Accept: 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                    });
+
+                    if (! response.ok) {
+                        throw new Error('preview_failed');
+                    }
+
+                    const payload = await response.json();
+                    this.samplePreviewTableHeaders = Array.isArray(payload.headers) ? payload.headers : [];
+                    this.samplePreviewTableRows = Array.isArray(payload.rows) ? payload.rows : [];
+                } catch {
+                    this.samplePreviewError = window.__merchantUploadSamplePreview?.csvError ?? null;
+                } finally {
+                    this.samplePreviewLoading = false;
+                }
             }
         },
 
@@ -97,6 +134,8 @@ export function registerUploadForm(initialType = '') {
             this.samplePreviewKind = 'none';
             this.samplePreviewDownloadName = '';
             this.samplePreviewCsvText = '';
+            this.samplePreviewTableHeaders = [];
+            this.samplePreviewTableRows = [];
             this.samplePreviewError = null;
             this.samplePreviewLoading = false;
             document.body.classList.remove('merchant-upload-sample-modal-open');

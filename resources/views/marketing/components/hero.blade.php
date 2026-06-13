@@ -1,7 +1,7 @@
 <!-- Hero Section -->
 <section class="relative hero-gradient pt-10 pb-10 md:pt-20 md:pb-20 overflow-hidden">
     <div
-        class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col lg:flex-row gap-5 items-center"
+        class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop flex flex-col lg:flex-row gap-5"
     >
         <div
         class="flex flex-col items-center lg:items-start gap-4 z-10 w-[100%] lg:w-[45%]"
@@ -45,15 +45,6 @@
                 <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span>
             </a>
         </div>
-        </div>
-        <div class="relative w-[100%] lg:w-[55%]">
-        <div class="">
-            <img
-            alt="{{ __('marketing.hero.image_alt') }}"
-            class="w-full h-full object-cover max-w-[650px] mx-auto"
-            src="{{ asset(__('marketing.hero.banner_image')) }}"
-            />
-        </div>
         <div class="flex flex-wrap justify-center gap-3 mt-6">
             <span
             class="flex flex-row sm:flex-col justify-center w-full sm:w-auto items-center gap-2 px-5 py-4 rounded-full border border-outline-variant font-medium text-label-md text-on-surface bg-surface-container-low shadow-sm transition-transform hover:-translate-y-1"
@@ -74,6 +65,16 @@
             {{ __('marketing.hero.pill_pick_list') }}
             </span>
         </div>
+        </div>
+        <div class="relative w-[100%] lg:w-[55%]">
+        <div class="">
+            <img
+            alt="{{ __('marketing.hero.image_alt') }}"
+            class="w-full h-full object-cover"
+            src="{{ asset(__('marketing.hero.banner_image')) }}"
+            />
+        </div>
+        
         <div
             class="absolute z-[-1] left-[50%] top-[50%] -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl"
         ></div>

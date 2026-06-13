@@ -36,6 +36,7 @@ return [
         'submit' => '註冊',
         'has_account' => '已有帳戶？',
         'login_link' => '登入',
+        'back_to_home' => '返回首頁',
     ],
 
     'forgot_password' => [

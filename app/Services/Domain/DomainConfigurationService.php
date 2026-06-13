@@ -138,8 +138,16 @@ class DomainConfigurationService
 
     public function forgetCache(): void
     {
-        $this->cache->forget(self::CACHE_KEY);
-        $this->cache->forget(self::CACHE_KEY_INFRASTRUCTURE);
+        if (! $this->databaseReady()) {
+            return;
+        }
+
+        try {
+            $this->cache->forget(self::CACHE_KEY);
+            $this->cache->forget(self::CACHE_KEY_INFRASTRUCTURE);
+        } catch (Throwable) {
+            // Cache store may be unavailable during install or before migrations.
+        }
     }
 
     public function syncInfrastructureToConfig(): void
@@ -200,36 +208,40 @@ class DomainConfigurationService
      */
     private function rememberInfrastructure(): array
     {
-        /** @var array<string, array{host: string, session_cookie: string, path_prefix?: string}> $infrastructure */
-        $infrastructure = $this->cache->rememberForever(self::CACHE_KEY_INFRASTRUCTURE, function (): array {
-            if (! $this->databaseReady()) {
-                return $this->fallbackInfrastructure();
-            }
+        if (! $this->databaseReady()) {
+            return $this->fallbackInfrastructure();
+        }
 
-            $settings = $this->repository->allInfrastructureSettings();
+        try {
+            /** @var array<string, array{host: string, session_cookie: string, path_prefix?: string}> $infrastructure */
+            $infrastructure = $this->cache->rememberForever(self::CACHE_KEY_INFRASTRUCTURE, function (): array {
+                $settings = $this->repository->allInfrastructureSettings();
 
-            if ($settings->isEmpty()) {
-                return $this->fallbackInfrastructure();
-            }
-
-            $mapped = [];
-
-            foreach ($settings as $setting) {
-                $key = $setting->surface;
-                $mapped[$key] = [
-                    'host' => $setting->host,
-                    'session_cookie' => (string) ($setting->session_cookie ?? ''),
-                ];
-
-                if ($setting->surface === DomainSetting::SURFACE_ADMIN) {
-                    $mapped[$key]['path_prefix'] = (string) ($setting->settings['path_prefix'] ?? config('domains.admin.path_prefix', 'boss'));
+                if ($settings->isEmpty()) {
+                    return $this->fallbackInfrastructure();
                 }
-            }
 
-            return array_replace($this->fallbackInfrastructure(), $mapped);
-        });
+                $mapped = [];
 
-        return $infrastructure;
+                foreach ($settings as $setting) {
+                    $key = $setting->surface;
+                    $mapped[$key] = [
+                        'host' => $setting->host,
+                        'session_cookie' => (string) ($setting->session_cookie ?? ''),
+                    ];
+
+                    if ($setting->surface === DomainSetting::SURFACE_ADMIN) {
+                        $mapped[$key]['path_prefix'] = (string) ($setting->settings['path_prefix'] ?? config('domains.admin.path_prefix', 'boss'));
+                    }
+                }
+
+                return array_replace($this->fallbackInfrastructure(), $mapped);
+            });
+
+            return $infrastructure;
+        } catch (Throwable) {
+            return $this->fallbackInfrastructure();
+        }
     }
 
     /**
@@ -261,18 +273,22 @@ class DomainConfigurationService
             return $this->fallbackMerchantConfigs();
         }
 
-        /** @var Collection<int, MerchantDomainConfig> $configs */
-        $configs = $this->cache->rememberForever(self::CACHE_KEY, function (): Collection {
-            $settings = $this->repository->allMerchantSettings();
+        try {
+            /** @var Collection<int, MerchantDomainConfig> $configs */
+            $configs = $this->cache->rememberForever(self::CACHE_KEY, function (): Collection {
+                $settings = $this->repository->allMerchantSettings();
 
-            if ($settings->isEmpty()) {
-                return $this->fallbackMerchantConfigs();
-            }
+                if ($settings->isEmpty()) {
+                    return $this->fallbackMerchantConfigs();
+                }
 
-            return $settings->map(fn (DomainSetting $setting): MerchantDomainConfig => $this->mapSetting($setting));
-        });
+                return $settings->map(fn (DomainSetting $setting): MerchantDomainConfig => $this->mapSetting($setting));
+            });
 
-        return $configs;
+            return $configs;
+        } catch (Throwable) {
+            return $this->fallbackMerchantConfigs();
+        }
     }
 
     private function mapSetting(DomainSetting $setting): MerchantDomainConfig

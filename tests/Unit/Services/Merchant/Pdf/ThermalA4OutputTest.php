@@ -16,12 +16,10 @@ class ThermalA4OutputTest extends TestCase
 {
     public function test_single_thermal_label_outputs_a4_page(): void
     {
-        $source = storage_path('framework/testing/a4-single-source.pdf');
         $slot = storage_path('framework/testing/a4-single-slot.pdf');
         $output = storage_path('framework/testing/a4-single-output.pdf');
 
-        PdfFixtureFactory::createThermalLabelPdf($source, 100.0, 150.0);
-        PdfFixtureFactory::createThermalLabelPdf($slot, 150.0, 100.0);
+        PdfFixtureFactory::createThermalLabelPdf($slot, 100.0, 150.0);
 
         $composer = app(ThermalA4SheetComposer::class);
         $metadata = $composer->composeSingle($slot, $output);
@@ -38,7 +36,7 @@ class ThermalA4OutputTest extends TestCase
 
         for ($i = 0; $i < 3; $i++) {
             $slot = storage_path("framework/testing/a4-multi-slot-{$i}.pdf");
-            PdfFixtureFactory::createThermalLabelPdf($slot, 150.0, 100.0);
+            PdfFixtureFactory::createThermalLabelPdf($slot, 100.0, 150.0);
             $slots[] = $slot;
         }
 
@@ -52,10 +50,10 @@ class ThermalA4OutputTest extends TestCase
         $this->assertSame([210.0, 297.0], $this->pageSizeMm($output));
     }
 
-    public function test_render_label_slot_produces_landscape_canvas(): void
+    public function test_render_label_slot_produces_portrait_canvas_for_portrait_source(): void
     {
-        $source = storage_path('framework/testing/label-slot-source.pdf');
-        $slot = storage_path('framework/testing/label-slot-output.pdf');
+        $source = storage_path('framework/testing/label-slot-source-portrait.pdf');
+        $slot = storage_path('framework/testing/label-slot-output-portrait.pdf');
         PdfFixtureFactory::createThermalLabelPdf($source, 100.0, 150.0);
 
         $context = new PdfProcessingContext(
@@ -74,6 +72,32 @@ class ThermalA4OutputTest extends TestCase
 
         $this->assertTrue($result->success);
         $this->assertSame([100.0, 150.0], $this->pageSizeMm($slot));
+        $this->assertFalse($result->metadata['rotated'] ?? true);
+    }
+
+    public function test_render_label_slot_rotates_landscape_source_to_portrait_canvas(): void
+    {
+        $source = storage_path('framework/testing/label-slot-source-landscape.pdf');
+        $slot = storage_path('framework/testing/label-slot-output-landscape.pdf');
+        PdfFixtureFactory::createThermalLabelPdf($source, 150.0, 100.0);
+
+        $context = new PdfProcessingContext(
+            uploadJobId: 1,
+            merchantId: 1,
+            countryCode: 'TW',
+            mode: PdfProcessingMode::ThermalLabel,
+        );
+
+        $result = app(ThermalPdfNormalizationService::class)->renderLabelSlot(
+            sourceAbsolutePath: $source,
+            pageNumber: 1,
+            context: $context,
+            outputAbsolutePath: $slot,
+        );
+
+        $this->assertTrue($result->success);
+        $this->assertSame([100.0, 150.0], $this->pageSizeMm($slot));
+        $this->assertTrue($result->metadata['rotated'] ?? false);
     }
 
     /**

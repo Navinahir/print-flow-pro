@@ -11,6 +11,8 @@ use App\Enums\UploadStatus;
 use App\Models\PrintJob;
 use App\Services\AuditLogService;
 use App\Services\Merchant\Pdf\Processors\LogisticsLabelsProcessor;
+use App\Services\Merchant\Pdf\Processors\OrderPdfProcessor;
+use App\Services\Merchant\Pdf\Processors\PickingListProcessor;
 use App\Services\Merchant\UploadShowViewService;
 use Illuminate\Validation\ValidationException;
 
@@ -19,6 +21,8 @@ class RegeneratePrintJobProcessing
     public function __construct(
         private readonly PreparePdfProcessingContext $prepareContext,
         private readonly LogisticsLabelsProcessor $logisticsLabelsProcessor,
+        private readonly PickingListProcessor $pickingListProcessor,
+        private readonly OrderPdfProcessor $orderPdfProcessor,
         private readonly UploadShowViewService $uploadShowViewService,
         private readonly AuditLogService $auditLogService,
     ) {}
@@ -38,13 +42,17 @@ class RegeneratePrintJobProcessing
             ]);
         }
 
-        if ($uploadJob->type !== UploadJobType::ThermalLabel) {
+        if (! in_array($uploadJob->type, [
+            UploadJobType::ThermalLabel,
+            UploadJobType::PickingList,
+            UploadJobType::OrderPdf,
+        ], true)) {
             throw ValidationException::withMessages([
                 'print_job' => __('merchant.uploads.errors.regenerate_unsupported'),
             ]);
         }
 
-        if ($uploadJob->status !== UploadStatus::Completed) {
+        if (! in_array($uploadJob->status, [UploadStatus::Completed, UploadStatus::CompletedWithErrors], true)) {
             throw ValidationException::withMessages([
                 'print_job' => __('merchant.uploads.errors.regenerate_not_ready'),
             ]);
@@ -57,7 +65,11 @@ class RegeneratePrintJobProcessing
         }
 
         $context = $this->prepareContext->execute($uploadJob);
-        $regenerated = $this->logisticsLabelsProcessor->regeneratePrintJob($printJob, $context);
+        $regenerated = match ($uploadJob->type) {
+            UploadJobType::ThermalLabel => $this->logisticsLabelsProcessor->regeneratePrintJob($printJob, $context),
+            UploadJobType::PickingList => $this->pickingListProcessor->regeneratePrintJob($printJob, $context),
+            UploadJobType::OrderPdf => $this->orderPdfProcessor->regeneratePrintJob($printJob, $context),
+        };
 
         $merchant = $uploadJob->merchant;
         $uploadJob->loadMissing('printJobs');

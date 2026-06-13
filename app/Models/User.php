@@ -7,9 +7,12 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\Permission as PermissionEnum;
 use App\Enums\Role as RoleEnum;
+use App\Support\UserAvatar;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Panel;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -25,7 +28,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property-read Collection<int, Role> $roles
  * @property-read Collection<int, Permission> $permissions
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable implements FilamentUser, HasAvatar
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, HasRoles, Notifiable;
@@ -67,6 +70,17 @@ class User extends Authenticatable implements FilamentUser
     {
         return $this->canAccessAdminSurface()
             && $this->can(PermissionEnum::AccessAdminPanel->value);
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        $path = UserAvatar::photoPath($this);
+
+        if ($path === null || ! Storage::disk('public')->exists($path)) {
+            return null;
+        }
+
+        return Storage::disk('public')->url($path);
     }
 
     public function canAccessAdminSurface(): bool

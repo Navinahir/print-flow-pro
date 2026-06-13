@@ -42,18 +42,7 @@
     >
         @include('merchant.pages.uploads.partials.detail-status-banner', ['showView' => $showView, 'job' => $job])
 
-        <div class="merchant-upload-show__columns">
-            <div class="merchant-upload-show__column merchant-upload-show__column--left">
-                @include('merchant.pages.uploads.partials.detail-source-files', ['job' => $job, 'showView' => $showView])
-            </div>
-
-            <div class="merchant-upload-show__column merchant-upload-show__column--right">
-                @include('merchant.pages.uploads.partials.detail-processing-result', ['showView' => $showView])
-                @include('merchant.pages.uploads.partials.detail-print-outputs', ['showView' => $showView])
-            </div>
-        </div>
-
-        @include('merchant.pages.uploads.partials.detail-outputs', [
+        @include('merchant.pages.uploads.partials.detail-type.'.$job->type->value, [
             'job' => $job,
             'showView' => $showView,
             'uploadPreview' => $uploadPreview,
@@ -61,5 +50,31 @@
         ])
 
         @include('merchant.pages.uploads.partials.detail-view-modal')
+
+        <div
+            x-show="regeneratingOutputId !== null"
+            x-cloak
+            x-transition:enter="transition ease-out duration-200"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            class="merchant-upload-show__regenerate-overlay"
+            role="status"
+            aria-live="polite"
+            aria-busy="true"
+            aria-label="{{ __('merchant.uploads.detail.regenerating') }}"
+        >
+            <div class="merchant-upload-show__regenerate-overlay-content">
+                <div class="merchant-spinner" aria-hidden="true"></div>
+                <p class="merchant-upload-show__regenerate-overlay-message">
+                    {{ __('merchant.uploads.detail.regenerating') }}
+                </p>
+            </div>
+        </div>
     </div>
+
+    <script>
+        window.__merchantUploadPreview = {
+            printBlocked: @js(__('merchant.uploads.preview.print_blocked')),
+        };
+    </script>
 @endsection

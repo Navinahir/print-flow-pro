@@ -64,7 +64,9 @@
 
                 placeholder="{{ __('merchant.profile.information.email_placeholder') }}"
 
-                class="merchant-input"
+                class="merchant-input cursor-not-allowed bg-slate-100 text-slate-600 dark:bg-slate-800/60 dark:text-slate-400"
+
+                readonly
 
             />
 

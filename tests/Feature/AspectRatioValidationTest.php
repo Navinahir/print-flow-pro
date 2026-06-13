@@ -25,13 +25,13 @@ class AspectRatioValidationTest extends TestCase
         $user = User::factory()->asMerchant()->create();
 
         $validResponse = $this->actingAs($user)->postJson(route('printing.aspect_ratio.validate'), [
-            'width' => 1500,
-            'height' => 1000,
+            'width' => 1000,
+            'height' => 1500,
         ]);
 
         $validResponse->assertOk();
         $validResponse->assertJsonPath('valid', true);
-        $validResponse->assertJsonPath('target_ratio', 1.5);
+        $validResponse->assertJsonPath('target_ratio', round(100 / 150, 4));
 
         $invalidResponse = $this->actingAs($user)->postJson(route('printing.aspect_ratio.validate'), [
             'width' => 800,

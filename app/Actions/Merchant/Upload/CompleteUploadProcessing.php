@@ -18,6 +18,14 @@ class CompleteUploadProcessing
 
     public function execute(UploadJob $uploadJob, PdfProcessingResult $result): UploadJob
     {
+        $uploadJob->refresh();
+
+        $fileErrors = is_array($result->normalization?->metadata['file_errors'] ?? null)
+            ? $result->normalization->metadata['file_errors']
+            : [];
+        $partialSuccess = (bool) ($result->normalization?->metadata['partial_success'] ?? false)
+            && $fileErrors !== [];
+
         $metadata = $uploadJob->metadata ?? [];
         $metadata['processing'] = [
             'completed_at' => now()->toIso8601String(),
@@ -25,10 +33,16 @@ class CompleteUploadProcessing
             'processed_pages' => $result->normalization?->metadata['processed_pages'] ?? 0,
         ];
 
+        if ($fileErrors !== []) {
+            $metadata['file_errors'] = $fileErrors;
+        }
+
         $uploadJob->update([
-            'status' => UploadStatus::Completed,
+            'status' => $partialSuccess ? UploadStatus::CompletedWithErrors : UploadStatus::Completed,
             'completed_at' => now(),
-            'error_message' => null,
+            'error_message' => $partialSuccess
+                ? __('merchant.uploads.errors.partial_processing_summary', ['count' => count($fileErrors)])
+                : null,
             'metadata' => $metadata,
         ]);
 

@@ -17,7 +17,7 @@
             <summary
             class="flex items-center justify-between p-6 cursor-pointer list-none transition-colors hover:bg-surface-container"
             >
-            <span class="text-label-md font-label-md text-on-background text-start pe-4">
+            <span class="text-[18px] font-semibold font-label-md text-on-background text-start pe-4">
                 {{ $item['question'] }}
             </span>
             <span

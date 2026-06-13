@@ -51,7 +51,7 @@ class PrintingPreviewContentTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('printing-preview-picking-list', false);
-        $response->assertSee(__('merchant.printing.preview.picking_list.fields.location'), false);
+        $response->assertSee(__('merchant.printing.preview.picking_list.fields.product_name'), false);
     }
 
     public function test_preview_api_returns_order_details_payload(): void

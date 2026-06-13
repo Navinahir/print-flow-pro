@@ -38,7 +38,7 @@ $fallbackMerchantRegions = [
         'active' => true,
         'sort_order' => 1,
         'session_cookie' => 'xycubic-merchant-tw-session',
-        'brand_name' => 'XY Cubic Shopee',
+        'brand_name' => 'XYCubic.',
         'brand_tagline' => 'Print-ready workflows for Shopee sellers',
         'locales' => [
             ['locale' => 'zh-TW', 'label' => 'Traditional Chinese', 'is_default' => true],
@@ -60,7 +60,7 @@ $fallbackMerchantRegions = [
         'active' => false,
         'sort_order' => 2,
         'session_cookie' => 'xycubic-merchant-ph-session',
-        'brand_name' => 'XY Cubic Shopee',
+        'brand_name' => 'XYCubic.',
         'brand_tagline' => 'Print-ready workflows for Shopee sellers',
         'locales' => [
             ['locale' => 'en-PH', 'label' => 'English (Philippines)', 'is_default' => true],
@@ -77,7 +77,7 @@ $fallbackMerchantRegions = [
         'active' => false,
         'sort_order' => 3,
         'session_cookie' => 'xycubic-merchant-vn-session',
-        'brand_name' => 'XY Cubic Shopee',
+        'brand_name' => 'XYCubic.',
         'brand_tagline' => 'Print-ready workflows for Shopee sellers',
         'locales' => [
             ['locale' => 'vi-VN', 'label' => 'Tiếng Việt', 'is_default' => true],
@@ -167,7 +167,7 @@ return [
     ],
 
     'fallback_brand' => [
-        'name' => 'XY Cubic Shopee',
+        'name' => 'XYCubic.',
         'tagline' => 'Print-ready workflows for Shopee sellers',
         'logo' => null,
         'favicon' => null,
@@ -179,9 +179,9 @@ return [
             'max_files_per_job' => 20,
         ],
         'preview' => [
-            'width_mm' => 150,
-            'height_mm' => 100,
-            'aspect_ratio' => 1.5,
+            'width_mm' => 100,
+            'height_mm' => 150,
+            'aspect_ratio' => 100 / 150,
             'safe_zone_inset_mm' => 5,
             'default_zoom' => 1.0,
             'scaling_behavior' => 'fit',

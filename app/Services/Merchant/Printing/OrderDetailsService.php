@@ -14,6 +14,7 @@ class OrderDetailsService extends PrintingModuleService
 {
     public function __construct(
         private readonly OrderDetailsPreviewService $previewService,
+        private readonly PrintJobListMapper $printJobListMapper,
         private readonly UploadJobListMapper $uploadJobListMapper,
     ) {}
 
@@ -27,6 +28,12 @@ class OrderDetailsService extends PrintingModuleService
      */
     protected function listItemsForUser(User $user): array
     {
+        $fromPrintJobs = $this->printJobListMapper->listItemsFor($user, 'order_details');
+
+        if ($fromPrintJobs !== []) {
+            return $fromPrintJobs;
+        }
+
         $fromUploads = $this->uploadJobListMapper->listItemsFor($user, UploadJobType::OrderPdf);
 
         if ($fromUploads !== []) {

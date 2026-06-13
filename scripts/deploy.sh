@@ -37,6 +37,6 @@ php artisan route:cache
 php artisan view:cache
 
 # M2+ — uncomment when Redis queue workers are configured
-# php artisan queue:restart
+php artisan queue:restart
 
 echo "==> Deploy complete"

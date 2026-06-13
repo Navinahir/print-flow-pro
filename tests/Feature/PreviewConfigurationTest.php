@@ -24,9 +24,9 @@ class PreviewConfigurationTest extends TestCase
     {
         $configuration = app(PreviewConfigurationService::class)->configuration();
 
-        $this->assertSame(150.0, $configuration->widthMm);
-        $this->assertSame(100.0, $configuration->heightMm);
-        $this->assertSame(1.5, $configuration->aspectRatio);
+        $this->assertSame(100.0, $configuration->widthMm);
+        $this->assertSame(150.0, $configuration->heightMm);
+        $this->assertEqualsWithDelta(100 / 150, $configuration->aspectRatio, 0.0001);
         $this->assertSame(5.0, $configuration->safeZoneInsetMm);
         $this->assertSame('fit', $configuration->scalingBehavior);
     }

@@ -144,7 +144,7 @@ app/
 │   ├── HtmlToPdfRenderer.php              # Browsershot wrapper (order details, labels)
 │   ├── MemoryGuard.php                    # Page-by-page limits, logging
 │   └── Processors/
-│       ├── OrderDetailsProcessor.php
+│       ├── OrderPdfProcessor.php
 │       ├── LogisticsLabelsProcessor.php
 │       ├── DeliveryLabelsProcessor.php
 │       └── PickingListProcessor.php
@@ -481,15 +481,14 @@ Existing `AuditLogService` + `UploadJobObserver` — extend for `PrintJob` obser
 
 | Aspect | Plan |
 | --- | --- |
-| V2.4 logic | HTML table → PDF; master-detail list from orders |
-| M1 state | Sample order HTML via `OrderDetailsPreviewService` |
-| M2 processor | `OrderDetailsProcessor` |
-| Input | One or more PDF files (Shopee order exports) OR future structured data |
-| Parse strategy | Phase 2a: If PDF contains extractable text/table → map to order DTO; Phase 2b: Merchant-uploaded PDF merge-only if parse deferred |
-| Output | Single merged PDF per batch OR one `PrintJob` per order (product decision: **recommend one per order** for partial reprint) |
-| Render | Browsershot rendering `order-details` Blade partial at A4 or spec-defined size; OR FPDI merge if inputs already PDF |
-| Preview | Replace `buildSamplePreview($job->id)` in `UploadPreviewService` with parsed order data |
-| Privacy | Stream download; shred immediately |
+| V2.4 logic | Shopee picking spreadsheet → A4 order PDF |
+| **Implemented (2026-06)** | `OrderPdfProcessor` reads spreadsheet via `PickingListSpreadsheetReader`; builds orders per source file; renders 2 orders/page with mPDF |
+| Input | CSV, XLS, XLSX (Shopee export format) |
+| Output | Combined or separate A4 PDFs via `PrintJob` |
+| Partial errors | `SpreadsheetBatchRowParser` skips bad files; `UploadStatus::CompletedWithErrors` |
+| Preview | Upload detail uses `OrderDetailsPreviewService::buildFromPrintJob()` |
+| Regenerate | Whole job or single print output; UI overlay on detail page |
+| Privacy | Stream download; shred cron still planned |
 
 ### 2. Logistics Labels (`thermal_label`)
 
@@ -523,22 +522,21 @@ Existing `AuditLogService` + `UploadJobObserver` — extend for `PrintJob` obser
 
 | Aspect | Plan |
 | --- | --- |
-| V2.4 logic | Laravel-Excel + regex variant splitting + `groupBy()->sum()` |
-| M1 state | Spreadsheet in `metadata.spreadsheet_files`; `PickingList` model empty |
-| M2 processor | `PickingListProcessor` |
+| V2.4 logic | Laravel-Excel + regex variant splitting + aggregation |
+| **Implemented (2026-06)** | `PickingListProcessor` via `PickingListSpreadsheetReader`; combined/separate output modes; A4 PDF via `PickingListPdfRenderer` |
 | Input | CSV/XLS/XLSX from temp |
-| Parse | Maatwebsite Excel → row DTOs → `PickingListAggregationService::aggregate()` |
-| Aggregation key | `[product_name, variant_key]` → summed quantity |
-| Output | One merged PDF (picking sheet) + `PickingList` row with `row_count` |
-| Preview | `PickingListPreviewService` fed from aggregated rows |
-| Mobile UX | M1 LocalStorage checklist — keep; no change required for PDF engine |
+| Parse | `SpreadsheetBatchRowParser` with per-file partial errors |
+| Output | Combined or per-file A4 picking sheet + `PickingList` rows |
+| Preview | `PickingListPreviewService::buildFromPrintJob()` on upload detail |
+| Regenerate | Whole job or single print output |
+| Mobile UX | M1 LocalStorage checklist — unchanged |
 
 ### Module priority order (implementation)
 
-1. **Logistics Labels** — core FPDI normalization; highest spec emphasis  
-2. **Delivery Labels** — CSV path exists; Browsershot HTML→PDF  
-3. **Picking List** — Excel aggregation  
-4. **Order Details** — depends on PDF parse vs merge-only decision  
+1. **Logistics Labels** — Done  
+2. **Order PDF** — Done  
+3. **Picking List** — Done  
+4. **Delivery Labels** — CSV path exists; upload processor + Browsershot HTML→PDF still planned  
 
 ---
 

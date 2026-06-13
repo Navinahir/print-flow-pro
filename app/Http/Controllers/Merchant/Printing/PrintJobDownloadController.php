@@ -27,10 +27,7 @@ class PrintJobDownloadController extends Controller
             abort(410, __('merchant.print_jobs.errors.expired'));
         }
 
-        $sheetNumber = (int) ($printJob->metadata['sheet_number'] ?? $printJob->source_page_number);
-        $originalName = (string) ($printJob->metadata['original_name'] ?? 'label.pdf');
-        $basename = pathinfo($originalName, PATHINFO_FILENAME);
-        $downloadName = "{$basename}-A4-sheet{$sheetNumber}.pdf";
+        $downloadName = $this->resolveDownloadName($printJob);
 
         $printJob->update([
             'status' => PrintJobStatus::Downloaded,
@@ -38,5 +35,21 @@ class PrintJobDownloadController extends Controller
         ]);
 
         return $disk->download($printJob->output_path, $downloadName);
+    }
+
+    private function resolveDownloadName(PrintJob $printJob): string
+    {
+        $originalName = (string) ($printJob->metadata['original_name'] ?? 'document.pdf');
+
+        if (($printJob->module ?? '') === 'order_details') {
+            return str_ends_with(strtolower($originalName), '.pdf')
+                ? $originalName
+                : "{$originalName}.pdf";
+        }
+
+        $sheetNumber = (int) ($printJob->metadata['sheet_number'] ?? $printJob->source_page_number);
+        $basename = pathinfo($originalName, PATHINFO_FILENAME);
+
+        return "{$basename}-A4-sheet{$sheetNumber}.pdf";
     }
 }

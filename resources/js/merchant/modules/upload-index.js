@@ -32,11 +32,9 @@ export function registerUploadIndex() {
 
                 showToast(window.__merchantUploadIndex?.deleteSuccess ?? 'Upload deleted.', 'success');
 
-                const row = document.querySelector(`[data-upload-row="${label}"]`);
-
-                if (row) {
-                    row.remove();
-                }
+                document
+                    .querySelectorAll(`[data-upload-row="${label}"]`)
+                    .forEach((row) => row.remove());
 
                 if (document.querySelectorAll('[data-upload-row]').length === 0) {
                     window.location.reload();

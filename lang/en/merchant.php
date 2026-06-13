@@ -5,7 +5,7 @@ declare(strict_types=1);
 return [
 
     'brand' => [
-        'name' => 'XY Cubic Shopee',
+        'name' => 'XYCubic.',
         'tagline' => 'Print-ready workflows for Shopee sellers',
     ],
 
@@ -86,7 +86,7 @@ return [
     ],
 
     'footer' => [
-        'copyright' => '© :year :brand. All rights reserved.',
+        'copyright' => '© :year XYCubic (PIXMA Business Co., Ltd.). All rights reserved.',
         'help' => 'Help & support',
         'privacy' => 'Privacy',
         'terms' => 'Terms',
@@ -185,6 +185,15 @@ return [
             'thermal_output_hint' => 'When uploading multiple PDFs, choose one combined A4 output or a separate output file per uploaded PDF.',
             'thermal_output_combined' => 'One combined output file',
             'thermal_output_separate' => 'Separate output file per upload',
+            'output_heading' => 'Output files',
+            'output_combined' => 'One combined output file',
+            'output_separate' => 'Separate output file per upload',
+            'picking_output_hint' => 'When uploading multiple spreadsheets, choose one combined picking PDF or a separate PDF per uploaded file.',
+            'picking_output_combined' => 'One combined picking PDF',
+            'picking_output_separate' => 'Separate picking PDF per upload',
+            'order_output_hint' => 'When uploading multiple spreadsheets, choose one combined order PDF or a separate PDF per uploaded file.',
+            'order_output_combined' => 'One combined order PDF',
+            'order_output_separate' => 'Separate order PDF per upload',
         ],
         'delete' => [
             'confirm_title' => 'Delete this upload?',
@@ -201,15 +210,39 @@ return [
             'last_updated' => 'Last updated',
             'pdf_files' => 'Uploaded PDF files',
             'pdf_files_hint' => 'Original files you submitted for this job.',
+            'uploaded_spreadsheets' => 'Uploaded spreadsheets',
+            'uploaded_spreadsheets_hint' => 'Source spreadsheet files for this picking list job.',
+            'uploaded_source_files' => 'Uploaded source files',
+            'uploaded_source_files_hint' => 'Original PDF or spreadsheet files submitted for this job.',
             'spreadsheet_files' => 'Spreadsheet files',
+            'spreadsheet_preview_hint' => 'Uploaded spreadsheet preview',
+            'source_file_status' => [
+                'completed' => 'Processed successfully',
+                'failed' => 'Processing failed',
+                'pending' => 'Pending',
+                'processing' => 'Processing',
+            ],
             'preview_placeholder' => 'Preview is shown in the panel on the right.',
             'validation_failed' => 'Processing failed',
             'validation_failed_hint' => 'Check the file format and size, download a reference sample from the upload page, then try again.',
-            'print_outputs' => 'Print-ready A4 sheets',
-            'print_outputs_hint' => 'Normalized output for download and printing. Single labels use one A4 page; multiple labels are arranged up to four per A4 sheet.',
+            'print_outputs' => 'Print-ready output',
+            'print_outputs_hint' => 'Download or print the normalized A4 PDF. Multiple labels are arranged up to four per page; all pages are delivered in one file when combined output is selected.',
+            'order_pdf_print_outputs_hint' => 'Download or print the generated A4 order PDF. Two orders are placed per page (top and bottom halves); combined output merges all orders into one file.',
+            'picking_print_outputs_hint' => 'Download or print the generated A4 picking sheet PDF. Combined output merges all rows into one file.',
             'sheet_title' => 'A4 sheet :number',
+            'thermal_combined_title' => 'Combined thermal output',
+            'thermal_combined_title_pages' => 'Combined thermal output (:pages pages)',
+            'thermal_output_title_pages' => 'Thermal output :number (:pages pages)',
+            'thermal_file_title_pages' => ':file (:pages pages)',
             'layout_single' => '1 label · single layout',
             'layout_multi' => ':count labels · 2×2 grid',
+            'layout_thermal_pdf' => ':labels labels · :pages-page PDF',
+            'pdf_pages_count' => ':count PDF pages',
+            'output_files_count' => '{1} :count output PDF|[2,*] :count output PDFs',
+            'source_file_one_label' => ':file (1 label)',
+            'source_file_labels' => ':file (:count labels)',
+            'source_group_one_label' => '1 label',
+            'source_group_labels' => ':count labels',
             'a4_size_label' => ':width×:height mm A4',
             'source_unknown' => 'Source labels unavailable',
             'source_file' => 'Uploaded file',
@@ -219,6 +252,7 @@ return [
             'processing_result' => 'Processing result',
             'processing_result_hint_single' => ':labels thermal label from :files file(s) → :sheets A4 sheet ready.',
             'processing_result_hint_multi' => ':labels thermal labels from :files file(s) → :sheets A4 sheet(s) ready (up to 4 labels per sheet).',
+            'processing_result_hint_merged_pdf' => ':labels thermal labels from :files file(s) → 1 PDF with :pages A4 page(s).',
             'labels_count' => ':count labels',
             'sheets_count' => ':count A4 sheets',
             'action_view' => 'View file',
@@ -229,13 +263,23 @@ return [
             'regenerating' => 'Regenerating…',
             'regenerate_success' => 'Output regenerated successfully.',
             'output_file_sheet_title' => ':file (sheet :number)',
+            'merge_title' => 'Merged order PDF',
+            'picking_title' => 'Picking list PDF',
+            'layout_picking' => ':count rows · picking sheet',
+            'picking_size_label' => ':count rows · A4 picking sheet',
+            'source_spreadsheets_heading' => 'Source spreadsheets',
+            'processing_result_hint_picking' => ':rows row(s) from :files spreadsheet file(s) → :outputs picking PDF(s) ready.',
+            'processing_result_hint_picking_partial' => ':rows row(s) processed from :files spreadsheet file(s). :outputs picking PDF(s) ready, :failed file(s) failed.',
+            'picking_outputs_count' => 'Picking PDFs',
+            'failed_files_count' => 'Failed files',
+            'failed_files_count_short' => ':count failed',
+            'partial_processing_title' => 'Some files could not be processed',
+            'partial_processing_hint' => 'Successful files are available below. Review the failed file details and upload a corrected spreadsheet if needed.',
+            'layout_merge' => ':count pages · merged document',
+            'merge_size_label' => ':count pages · original layout preserved',
+            'source_pages_heading' => 'Pages in this document',
+            'processing_result_hint_order' => ':pages order section(s) from :files spreadsheet file(s) → order PDF ready.',
             'view_modal_hint' => 'PDF preview — use download or print from the toolbar if needed.',
-        ],
-        'errors' => [
-            'source_missing' => 'The uploaded file is no longer available.',
-            'regenerate_unsupported' => 'Regeneration is only available for thermal label uploads.',
-            'regenerate_not_ready' => 'This upload cannot be regenerated while it is still processing.',
-            'regenerate_missing_sources' => 'Original uploaded files are missing, so this job cannot be regenerated.',
         ],
         'guides' => [
             'heading' => 'Upload instructions',
@@ -254,7 +298,7 @@ return [
                 'instructions' => [
                     'Upload Shopee thermal shipping label PDFs exported from Seller Centre.',
                     'Supported size: about 10×15 cm (100×150 mm) — portrait or landscape.',
-                    'Each PDF page becomes one normalized 150×100 mm print label.',
+                    'Each PDF page becomes one normalized 100×150 mm print label (portrait).',
                     'You may upload multiple PDF files in one job; every page is processed separately.',
                 ],
                 'rejections' => [
@@ -271,15 +315,16 @@ return [
             ],
             'order_pdf' => [
                 'instructions' => [
-                    'Upload Shopee order detail PDFs exported from Seller Centre.',
-                    'PDF format only. Multiple order files may be uploaded together.',
+                    'Upload order spreadsheets exported from Shopee Seller Centre (same format as picking list exports).',
+                    'Accepted formats: CSV, XLS, XLSX. Multiple files may be uploaded together.',
                 ],
                 'rejections' => [
-                    'Spreadsheet or image files instead of PDF.',
+                    'PDF files for order PDF uploads.',
+                    'Spreadsheets missing required columns (tracking_number, order_sn, product_info).',
                 ],
                 'samples' => [
-                    'a' => 'Order PDF sample A',
-                    'b' => 'Order PDF sample B',
+                    'a' => 'Order spreadsheet sample A (3 orders)',
+                    'b' => 'Order spreadsheet sample B (1 order)',
                 ],
             ],
             'picking_list' => [
@@ -322,6 +367,7 @@ return [
             'empty_description' => 'Processing has not produced a printable preview for this job yet.',
             'processing' => 'Processing your files… this page will refresh automatically.',
             'processing_failed' => 'Processing failed. See the error message below.',
+            'print_blocked' => 'Could not open the print dialog. Allow pop-ups for this site or use Preview and print from the PDF viewer.',
             'select_label' => 'Select A4 sheet',
             'print_job_subtitle' => 'Sheet :page · :width×:height mm A4',
             'pdf_loading' => 'Loading PDF preview…',
@@ -330,6 +376,7 @@ return [
             'pending' => 'Pending',
             'processing' => 'Processing',
             'completed' => 'Completed',
+            'completed_with_errors' => 'Completed with errors',
             'failed' => 'Failed',
             'cancelled' => 'Cancelled',
         ],
@@ -351,6 +398,11 @@ return [
         ],
         'errors' => [
             'no_merchant_profile' => 'Your account is not linked to a merchant profile. Please contact support.',
+            'source_missing' => 'The uploaded file is no longer available.',
+            'partial_processing_summary' => ':count uploaded file(s) could not be processed.',
+            'regenerate_unsupported' => 'This upload type cannot be regenerated.',
+            'regenerate_not_ready' => 'This upload cannot be regenerated while it is still processing.',
+            'regenerate_missing_sources' => 'Original uploaded files are missing, so this job cannot be regenerated.',
         ],
     ],
 
@@ -423,7 +475,7 @@ return [
             'list_description' => 'Select an item to preview printable content.',
             'list_empty' => 'No items available yet.',
             'preview_heading' => 'Preview',
-            'preview_description' => 'Print preview workspace (150×100 mm canvas coming soon).',
+            'preview_description' => 'Print preview workspace (100×150 mm portrait canvas).',
             'preview_placeholder' => 'Select an item from the list to preview',
             'preview_not_implemented' => 'Print actions will be available in a future phase.',
             'print' => 'Print',
@@ -449,6 +501,15 @@ return [
                     'subtotal' => 'Subtotal',
                     'shipping' => 'Shipping',
                     'total' => 'Total',
+                ],
+                'processed' => [
+                    'order_number' => 'Merged PDF #:job',
+                    'customer_name' => ':files file(s) merged',
+                    'customer_fallback' => 'Shopee order',
+                    'order_date' => ':pages pages · original layout',
+                    'multiple_orders' => ':first (:count orders)',
+                    'status' => 'Ready to download',
+                    'notes' => 'Pages appended in upload order with no reformatting.',
                 ],
                 'samples' => [
                     'list_title' => 'Order #:id',
@@ -491,9 +552,11 @@ return [
             ],
             'picking_list' => [
                 'fields' => [
-                    'sku' => 'SKU',
-                    'item' => 'Item',
-                    'location' => 'Bin',
+                    'line' => '#',
+                    'order_sn' => 'Order',
+                    'product_name' => 'Product',
+                    'variant_name' => 'Variant',
+                    'variant_sku' => 'Variant SKU',
                     'qty' => 'Qty',
                     'total_units' => 'Total units',
                 ],
@@ -513,6 +576,10 @@ return [
             'order_details' => [
                 'title' => 'Order details',
                 'subtitle' => 'Review order PDFs and prepare print-ready outputs.',
+                'list' => [
+                    'default_title' => 'Merged order PDF #:id',
+                    'subtitle' => ':pages pages · :status · :date',
+                ],
             ],
             'logistics_labels' => [
                 'title' => 'Logistics labels',
@@ -561,13 +628,13 @@ return [
         'dimensions_label' => ':width×:height mm',
         'toolbar' => [
             'heading' => 'Preview',
-            'description' => 'Fixed 150×100 mm print area (3:2 ratio). Scales responsively to fit your screen.',
+            'description' => 'Fixed 100×150 mm print area (portrait, 2:3 ratio). Scales responsively to fit your screen.',
             'print' => 'Print',
             'print_disabled_hint' => 'Select an item to enable printing.',
             'safe_zone_disabled_hint' => 'Select an item to toggle the safe zone.',
         ],
         'container' => [
-            'aria_label' => 'Print preview canvas, 150 by 100 millimetres',
+            'aria_label' => 'Print preview canvas, 100 by 150 millimetres',
         ],
         'safe_zone' => [
             'aria_label' => 'Safe print zone, :inset millimetre inset from each edge',
@@ -577,19 +644,19 @@ return [
         ],
         'empty' => [
             'title' => 'Select an item from the list to preview',
-            'description' => 'The preview canvas shows a fixed 150×100 mm workspace scaled to your screen.',
+            'description' => 'The preview canvas shows a fixed 100×150 mm portrait workspace scaled to your screen.',
             'selected_fallback' => 'Preview item',
             'content_placeholder' => 'Select an item from the list to view its printable preview.',
             'list_hint' => 'Choose an item from the list on the left',
         ],
         'aspect_ratio' => [
-            'valid' => 'Asset dimensions match the 150×100 mm (3:2) print ratio.',
-            'invalid' => 'Aspect ratio deviates by :deviation% from 3:2 (tolerance :tolerance%).',
+            'valid' => 'Asset dimensions match the 100×150 mm (portrait 2:3) print ratio.',
+            'invalid' => 'Aspect ratio deviates by :deviation% from 2:3 (tolerance :tolerance%).',
             'banner_title' => 'Aspect ratio warning',
-            'banner_message' => 'This asset does not match the required 150×100 mm (3:2) print ratio.',
+            'banner_message' => 'This asset does not match the required 100×150 mm (portrait 2:3) print ratio.',
             'force_adjustment' => 'Force adjustment (proceed anyway)',
             'sweetalert_title' => 'Aspect ratio mismatch',
-            'sweetalert_message' => 'The selected asset exceeds the allowed deviation from the 150×100 mm print ratio.',
+            'sweetalert_message' => 'The selected asset exceeds the allowed deviation from the 100×150 mm print ratio.',
             'validation' => [
                 'width_required' => 'Width is required when no file is uploaded.',
                 'height_required' => 'Height is required when no file is uploaded.',
@@ -652,6 +719,50 @@ return [
         ],
     ],
 
+    'picking_list' => [
+        'errors' => [
+            'invalid_format' => 'The spreadsheet format is not supported. :detail',
+            'missing_columns' => 'Required columns are missing: :columns',
+            'empty_spreadsheet' => 'The spreadsheet contains no valid picking rows.',
+        ],
+        'pdf' => [
+            'title' => 'Picking list',
+            'account_label' => 'User account',
+            'generated_at_label' => 'Generated at',
+            'package_label' => 'package',
+            'columns' => [
+                'main_sku' => 'Main SKU',
+                'image' => 'Image',
+                'product_name' => 'Product name',
+                'variant_sku' => 'Variant SKU',
+                'variant_name' => 'Variant',
+                'quantity' => 'Qty',
+                'order_sn' => 'Order no.',
+            ],
+        ],
+    ],
+
+    'order_pdf' => [
+        'errors' => [
+            'invalid_format' => 'The spreadsheet format is not supported. :detail',
+            'empty_spreadsheet' => 'The spreadsheet contains no valid order rows.',
+        ],
+        'pdf' => [
+            'section_title' => 'Product list',
+            'order_number_label' => 'Order no. (single)',
+            'package_label' => 'package',
+            'buyer_note_label' => 'Buyer note',
+            'columns' => [
+                'main_sku' => 'Main SKU',
+                'product_name' => 'Product name',
+                'variant_sku' => 'Variant SKU',
+                'variant_name' => 'Variant',
+                'quantity' => 'Qty',
+                'total' => 'Total',
+            ],
+        ],
+    ],
+
     'pdf' => [
         'modes' => [
             'thermal_label' => 'Thermal logistics label',
@@ -692,6 +803,10 @@ return [
             'failed' => 'PDF normalization failed. :detail',
             'thermal_page_complete' => 'Thermal label page normalized to the print canvas.',
             'logistics_complete' => ':count logistics label page(s) normalized and ready for download.',
+            'order_merge_complete' => ':pages order section(s) from :files file(s) generated into one PDF and ready for download.',
+            'order_partial_complete' => ':orders order section(s) generated. :failed file(s) could not be processed.',
+            'picking_list_complete' => ':rows picking row(s) exported to a print-ready PDF.',
+            'picking_list_partial_complete' => ':rows picking row(s) exported. :failed file(s) could not be processed.',
         ],
         'processing' => [
             'framework_complete' => 'PDF framework pipeline completed successfully.',

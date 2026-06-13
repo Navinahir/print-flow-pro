@@ -46,6 +46,7 @@ final readonly class UploadSampleFileData
         return match ($extension) {
             'pdf' => 'pdf',
             'csv' => 'csv',
+            'xlsx', 'xls' => 'spreadsheet',
             default => 'none',
         };
     }

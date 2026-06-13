@@ -32,6 +32,13 @@ export function createUploadPreviewState(config = {}) {
         fileModalLabel: '',
         printFrame: null,
         regeneratingOutputId: null,
+        spreadsheetModalOpen: false,
+        spreadsheetModalLabel: '',
+        spreadsheetModalDownloadUrl: '',
+        spreadsheetModalHeaders: [],
+        spreadsheetModalRows: [],
+        spreadsheetModalLoading: false,
+        spreadsheetModalError: null,
 
         init() {
             if (this.pollWhileProcessing) {
@@ -42,6 +49,7 @@ export function createUploadPreviewState(config = {}) {
         destroy() {
             this.stopPolling();
             this.removePrintFrame();
+            this.setRegeneratingOverlay(false);
         },
 
         selectedPreview() {
@@ -93,6 +101,50 @@ export function createUploadPreviewState(config = {}) {
             document.body.classList.remove('merchant-upload-file-modal-open');
         },
 
+        async openSpreadsheetPreview(previewUrl, label, downloadUrl = '') {
+            this.spreadsheetModalLabel = label ?? '';
+            this.spreadsheetModalDownloadUrl = downloadUrl ?? '';
+            this.spreadsheetModalHeaders = [];
+            this.spreadsheetModalRows = [];
+            this.spreadsheetModalError = null;
+            this.spreadsheetModalLoading = true;
+            this.spreadsheetModalOpen = true;
+            document.body.classList.add('merchant-upload-sample-modal-open');
+
+            try {
+                const response = await fetch(previewUrl, {
+                    headers: {
+                        Accept: 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                if (! response.ok) {
+                    throw new Error('preview_failed');
+                }
+
+                const payload = await response.json();
+                this.spreadsheetModalHeaders = Array.isArray(payload.headers) ? payload.headers : [];
+                this.spreadsheetModalRows = Array.isArray(payload.rows) ? payload.rows : [];
+            } catch {
+                this.spreadsheetModalError = window.__merchantUploadSamplePreview?.csvError
+                    ?? 'Could not load preview.';
+            } finally {
+                this.spreadsheetModalLoading = false;
+            }
+        },
+
+        closeSpreadsheetModal() {
+            this.spreadsheetModalOpen = false;
+            this.spreadsheetModalLabel = '';
+            this.spreadsheetModalDownloadUrl = '';
+            this.spreadsheetModalHeaders = [];
+            this.spreadsheetModalRows = [];
+            this.spreadsheetModalError = null;
+            this.spreadsheetModalLoading = false;
+            document.body.classList.remove('merchant-upload-sample-modal-open');
+        },
+
         printPreview() {
             if (this.usePdfPreview) {
                 const url = this.selectedPreviewUrl();
@@ -107,31 +159,70 @@ export function createUploadPreviewState(config = {}) {
             executePrintPreview(this.$root);
         },
 
-        printPdfUrl(url) {
+        printPdfUrl(url, label = '') {
             if (! url) {
                 return;
             }
 
             this.removePrintFrame();
 
+            if (label) {
+                this.fileModalLabel = label;
+            }
+
+            const printWindow = window.open(url, '_blank');
+
+            if (printWindow) {
+                const attemptPrint = () => {
+                    try {
+                        printWindow.focus();
+                        printWindow.print();
+                    } catch {
+                        // PDF viewer may not be ready yet.
+                    }
+                };
+
+                printWindow.addEventListener('load', () => {
+                    window.setTimeout(attemptPrint, 300);
+                });
+
+                window.setTimeout(attemptPrint, 1200);
+
+                return;
+            }
+
+            this.printPdfUrlViaFrame(url);
+        },
+
+        printPdfUrlViaFrame(url) {
             const frame = document.createElement('iframe');
             frame.className = 'merchant-upload-show__print-frame';
             frame.src = url;
             frame.title = this.fileModalLabel || 'Print preview';
+            frame.setAttribute('aria-hidden', 'true');
 
-            frame.onload = () => {
+            const attemptPrint = () => {
                 try {
                     frame.contentWindow?.focus();
                     frame.contentWindow?.print();
                 } catch {
-                    window.open(url, '_blank');
+                    showToast(
+                        window.__merchantUploadPreview?.printBlocked
+                            ?? 'Could not open the print dialog. Please use Preview, then print from the PDF viewer.',
+                        'warning',
+                    );
                 }
+            };
+
+            frame.onload = () => {
+                window.setTimeout(attemptPrint, 500);
             };
 
             document.body.appendChild(frame);
             this.printFrame = frame;
 
-            window.setTimeout(() => this.removePrintFrame(), 60000);
+            window.setTimeout(attemptPrint, 2000);
+            window.setTimeout(() => this.removePrintFrame(), 120000);
         },
 
         removePrintFrame() {
@@ -141,12 +232,19 @@ export function createUploadPreviewState(config = {}) {
             }
         },
 
+        setRegeneratingOverlay(active) {
+            document.body.classList.toggle('merchant-upload-regenerating', active);
+        },
+
         async regeneratePrintOutput(url, listId) {
             if (! url || this.regeneratingOutputId !== null) {
                 return;
             }
 
             this.regeneratingOutputId = listId;
+            this.setRegeneratingOverlay(true);
+
+            let shouldReload = false;
 
             try {
                 const response = await window.MerchantAjax.post(url);
@@ -156,11 +254,15 @@ export function createUploadPreviewState(config = {}) {
                     showToast(data.message, 'success');
                 }
 
+                shouldReload = true;
                 window.location.reload();
             } catch {
                 // MerchantAjax shows toast
             } finally {
-                this.regeneratingOutputId = null;
+                if (! shouldReload) {
+                    this.regeneratingOutputId = null;
+                    this.setRegeneratingOverlay(false);
+                }
             }
         },
 

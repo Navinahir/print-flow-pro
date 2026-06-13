@@ -9,12 +9,14 @@ use App\Enums\PrintJobStatus;
 use App\Models\PrintJob;
 use App\Models\User;
 use App\Services\Merchant\Preview\LogisticsLabelsPreviewService;
+use App\Services\Merchant\Preview\OrderDetailsPreviewService;
 use Illuminate\Support\Collection;
 
 class PrintJobListMapper
 {
     public function __construct(
-        private readonly LogisticsLabelsPreviewService $previewService,
+        private readonly LogisticsLabelsPreviewService $logisticsPreviewService,
+        private readonly OrderDetailsPreviewService $orderDetailsPreviewService,
     ) {}
 
     /**
@@ -59,17 +61,42 @@ class PrintJobListMapper
 
     public function toListItem(PrintJob $printJob): PrintingListItemData
     {
-        $preview = $this->previewService->buildFromPrintJob($printJob)->toArray();
+        $module = (string) ($printJob->module ?? 'logistics_labels');
+        $preview = $this->buildPreview($printJob, $module)->toArray();
+
+        if ($module === 'order_details') {
+            $originalName = (string) (
+                $printJob->metadata['original_name']
+                ?? $printJob->pdfUpload?->original_name
+                ?? __('merchant.printing.modules.order_details.list.default_title', ['id' => $printJob->id])
+            );
+
+            return new PrintingListItemData(
+                id: 'print-job-'.$printJob->id,
+                title: $originalName,
+                subtitle: (string) __('merchant.printing.modules.order_details.list.subtitle', [
+                    'pages' => (int) ($printJob->metadata['page_count'] ?? 0),
+                    'status' => $printJob->status->label(),
+                    'date' => $printJob->created_at?->format('M j, Y H:i') ?? '',
+                ]),
+                status: $this->mapStatus($printJob->status),
+                meta: $preview['download_url'] ?? null,
+                width: 1500,
+                height: 1000,
+                preview: $preview,
+            );
+        }
+
         $originalName = (string) (
             $printJob->metadata['original_name']
             ?? $printJob->pdfUpload?->original_name
-            ?? __('merchant.printing.logistics_labels.list.default_title', ['id' => $printJob->id])
+            ?? __('merchant.printing.modules.logistics_labels.list.default_title', ['id' => $printJob->id])
         );
 
         return new PrintingListItemData(
             id: 'print-job-'.$printJob->id,
             title: $originalName,
-            subtitle: (string) __('merchant.printing.logistics_labels.list.subtitle', [
+            subtitle: (string) __('merchant.printing.modules.logistics_labels.list.subtitle', [
                 'page' => $printJob->source_page_number,
                 'status' => $printJob->status->label(),
                 'date' => $printJob->created_at?->format('M j, Y H:i') ?? '',
@@ -80,6 +107,15 @@ class PrintJobListMapper
             height: 1000,
             preview: $preview,
         );
+    }
+
+    private function buildPreview(PrintJob $printJob, string $module): \App\Contracts\Merchant\Preview\PrintingPreviewPayload
+    {
+        if ($module === 'order_details') {
+            return $this->orderDetailsPreviewService->buildFromPrintJob($printJob);
+        }
+
+        return $this->logisticsPreviewService->buildFromPrintJob($printJob);
     }
 
     private function mapStatus(PrintJobStatus $status): string

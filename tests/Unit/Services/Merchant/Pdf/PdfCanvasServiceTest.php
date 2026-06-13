@@ -13,8 +13,8 @@ class PdfCanvasServiceTest extends TestCase
     {
         $canvas = app(PdfCanvasService::class)->buildCanvasSpec();
 
-        $this->assertSame(150.0, $canvas->widthMm);
-        $this->assertSame(100.0, $canvas->heightMm);
+        $this->assertSame(100.0, $canvas->widthMm);
+        $this->assertSame(150.0, $canvas->heightMm);
         $this->assertSame(5.0, $canvas->safeZoneInsetMm);
     }
 
@@ -23,7 +23,7 @@ class PdfCanvasServiceTest extends TestCase
         $canvas = app(PdfCanvasService::class)->buildCanvasSpec();
         $safeArea = app(PdfCanvasService::class)->safeAreaDimensions($canvas);
 
-        $this->assertSame(140.0, $safeArea->widthMm);
-        $this->assertSame(90.0, $safeArea->heightMm);
+        $this->assertSame(90.0, $safeArea->widthMm);
+        $this->assertSame(140.0, $safeArea->heightMm);
     }
 }

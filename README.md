@@ -468,7 +468,7 @@ Merchants can toggle **Light**, **Dark**, or **System** theme from the navbar. P
 
 ### Merchant portal status
 
-The TW merchant portal (port 8001) is feature-complete for Milestone 1: dedicated Blade UI, locale switcher, four printing module workspaces, 150×100 mm preview engine, safe zone, aspect ratio validation, courier auto-shrink, CSV import, upload preview, dark mode, and browser print. Track remaining polish and M2 items in `TODO.md` and `MILESTONE_1_AUDIT.md`.
+The TW merchant portal (port 8001) includes Milestone 1 printing workspaces plus **Milestone 2 upload processing**: async jobs for thermal labels, order PDF (spreadsheet → A4), and picking list (spreadsheet → A4), with upload history, type-specific detail pages, per-file status, combined/separate output modes, partial batch success (`completed_with_errors`), regenerate (whole job or single print output), spreadsheet preview modal, and a full-page blur overlay during regeneration. Delivery label upload processing remains planned. Track remaining items in `TODO.md`, `MILESTONE_1_AUDIT.md`, and `MILESTONE_2_AUDIT.md`.
 
 ### Local merchant URLs
 
@@ -478,6 +478,7 @@ The TW merchant portal (port 8001) is feature-complete for Milestone 1: dedicate
 | http://localhost:8001/dashboard | Merchant dashboard |
 | http://localhost:8001/uploads | Upload history |
 | http://localhost:8001/uploads/create | New upload |
+| http://localhost:8001/uploads/{id} | Upload detail (status, source files, print outputs, preview) |
 | http://localhost:8001/profile | Account settings |
 | http://localhost:8001/printing/order-details | Order details workspace |
 | http://localhost:8001/printing/logistics-labels | Logistics labels workspace |
@@ -504,16 +505,16 @@ routes/merchant/printing.php
     → merchant.printing.{module}.index (Blade)
 ```
 
-### Preview engine (150×100 mm)
+### Preview engine (100×150 mm thermal canvas)
 
 Reusable Blade components (registered as `x-merchant.preview.*`):
 
 | Component | Purpose |
 | --- | --- |
 | `PreviewWrapper` | Outer shell, loading overlay, toolbar slot |
-| `PreviewContainer` | Fixed 150×100 mm canvas (3:2 ratio), responsive scaling, safe zone overlay |
+| `PreviewContainer` | Fixed 100×150 mm portrait canvas (2:3 ratio), responsive scaling, safe zone overlay |
 | `PreviewSafeZone` | Dashed 5 mm inset print boundary guide (toggleable) |
-| `PreviewAspectWarning` | Amber warning banner + force-adjustment toggle when asset ratio deviates >10% from 3:2 |
+| `PreviewAspectWarning` | Amber warning banner + force-adjustment toggle when asset ratio deviates >10% from 2:3 |
 | `PreviewToolbar` | Heading, description, safe-zone toggle, print action |
 
 **Paths:**
@@ -525,7 +526,7 @@ Reusable Blade components (registered as `x-merchant.preview.*`):
 | CSS | `resources/css/merchant/preview/` (imported via `merchant.css`) |
 | JS | `resources/js/merchant/preview/` (`constants.js`, `scale.js`, `safe-zone.js`, `aspect-ratio.js`, `engine.js`) |
 
-The canvas uses a logical 566×378 px surface (150×100 mm at 96 dpi) and scales down via `ResizeObserver` to fit the stage while preserving 3:2 ratio.
+The thermal preview canvas uses a logical 100×150 mm portrait surface and scales down via `ResizeObserver` to fit the stage. A4 upload outputs (thermal sheets, order PDF, picking list) use separate PDF preview iframes on the upload detail page.
 
 **Safe print zone:** `PreviewSafeZone` renders a dashed amber guide inset 5 mm from each edge (percentage-based insets scale with the canvas). Toggle visibility via **Hide safe zone** / **Show safe zone** in the preview toolbar (`safeZoneVisible` on `printingWorkspace` / `merchantPreview` Alpine state). Shared automatically across all printing modules through `PreviewContainer`.
 
@@ -559,9 +560,9 @@ Preview dimensions and behavior are stored in `domain_settings.settings.preview`
 
 | Key | Default | Purpose |
 | --- | --- | --- |
-| `width_mm` | 150 | Canvas width |
-| `height_mm` | 100 | Canvas height |
-| `aspect_ratio` | 1.5 | Target ratio for validation |
+| `width_mm` | 100 | Canvas width (thermal preview) |
+| `height_mm` | 150 | Canvas height (thermal preview) |
+| `aspect_ratio` | 0.667 | Target ratio for validation (2:3 portrait) |
 | `safe_zone_inset_mm` | 5 | Safe print zone inset |
 | `default_zoom` | 1.0 | Max scale factor |
 | `scaling_behavior` | `fit` | Responsive scaling mode |
@@ -570,7 +571,7 @@ Preview dimensions and behavior are stored in `domain_settings.settings.preview`
 
 ### Upload detail preview
 
-Upload show pages (`/uploads/{id}`) embed the shared preview engine. `UploadPreviewService` maps upload job types to existing preview DTOs; AJAX refresh via `POST /uploads/{upload}/preview`.
+Upload show pages (`/uploads/{id}`) use a type-specific layout: uploaded source files (with per-file success/error status), processing summary, and print-ready output cards (preview, download, print, regenerate). `UploadPreviewService` resolves print-job PDF previews for thermal, order PDF, and picking list jobs; delivery labels use the legacy preview DTO. AJAX refresh via `POST /uploads/{upload}/preview` while jobs are processing. Regeneration shows a full-page blurred overlay (`upload-preview.js` + `uploads.css`).
 
 ### Print workflow
 
@@ -712,17 +713,21 @@ Activity is recorded via `App\Services\AuditLogService` (auth events, upload job
 
 Merchants register at `/register` (creates a `merchants` profile automatically). Upload types:
 
-| Type | Files |
-| --- | --- |
-| `order_pdf` | PDF |
-| `thermal_label` | PDF |
-| `picking_list` | CSV, XLS, XLSX |
-| `delivery_label` | PDF |
+| Type | Input files | Output |
+| --- | --- | --- |
+| `order_pdf` | CSV, XLS, XLSX (Shopee picking export) | A4 order PDF (2 orders per page) |
+| `thermal_label` | PDF | Normalized A4 sheets (100×150 mm labels) |
+| `picking_list` | CSV, XLS, XLSX | A4 picking sheet PDF |
+| `delivery_label` | PDF | *(processing planned)* |
 
 ```bash
 # Merchant routes (after login + email verification)
-/uploads          # history
-/uploads/create   # drag & drop uploader
+/uploads                              # history (ID/type link to detail)
+/uploads/create                       # drag & drop uploader with type guide + samples
+/uploads/{upload}                     # detail
+/uploads/{upload}/regenerate          # reprocess whole job
+/uploads/{upload}/print-jobs/{id}/regenerate  # reprocess one output
+/uploads/{upload}/spreadsheets/{index}/preview|download
 ```
 
 Configure upload limits per region in `domain_settings.settings` (seeded by `DomainSettingSeeder`) or via `MerchantConfig::get('upload.max_file_size_kb')`.
@@ -757,18 +762,22 @@ Track implementation progress in `TODO.md`. Milestone audits: `MILESTONE_1_AUDIT
 
 ## Milestone 2 — PDF Engine
 
-**Status:** PDF engine foundation + **logistics labels normalization** implemented (2026-06-06).
+**Status:** PDF engine foundation, logistics labels, order PDF, and picking list processors implemented (through 2026-06).
 
 | Deliverable | Status |
 | --- | --- |
 | `config/pdf.php` + `PdfServiceProvider` | Done |
 | Core services (`PdfEngineService`, `PdfNormalizationService`, `PdfCanvasService`, `PdfValidationService`, `PdfBoundaryDetectionService`) | Done |
 | FPDI integration (`setasign/fpdf` + `FpdiDocumentAdapter`) | Done — validation + normalization |
-| Processing pipeline (6 stages) + Actions | Done — normalization active for thermal labels |
+| Processing pipeline (6 stages) + Actions | Done |
 | DTOs, interfaces, exceptions, localization | Done |
-| **Logistics labels processor** | **Done** — thermal only; A4 rejected; 150×100 mm output |
-| `PrintJob` model, queue job, merchant UI list/preview/download | Done (logistics module) |
-| Module processors (order merge, delivery, picking) | Not started |
+| **Logistics labels processor** | Done — thermal only; A4 rejected; multi-label A4 sheets |
+| **Order PDF processor** | Done — spreadsheet → A4 PDF via `OrderPdfProcessor` |
+| **Picking list processor** | Done — spreadsheet → A4 picking sheet via `PickingListProcessor` |
+| `ProcessUploadJob` queue dispatch from `UploadService` | Done |
+| Upload detail UI, per-file status, partial batch errors, regenerate | Done |
+| **Delivery label processor** | Not started |
+| Download shred + temp purge cron | Planned |
 
 **Documentation:**
 

@@ -1,12 +1,11 @@
 @php
-    $brandName = \App\Support\MerchantConfig::get('brand.name', __('merchant.brand.name'));
+    $brandName = __('merchant.brand.name');
 @endphp
 
 <header class="merchant-guest-header">
     <div class="merchant-guest-header__inner">
         <a href="{{ route('login') }}" class="merchant-guest-header__brand">
-            <x-merchant.brand-mark size="sm" />
-            <span class="merchant-guest-header__brand-name">{{ $brandName }}</span>
+            <img alt="{{ __('marketing.brand.logo_alt') }}" class="h-10 w-auto" src="{{ asset('images/logo.svg') }}" />
         </a>
 
         <div class="merchant-guest-header__controls">

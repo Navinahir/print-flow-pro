@@ -11,21 +11,18 @@ class PreviewConfigurationService
 {
     public function configuration(): PreviewConfiguration
     {
-        $widthMm = (float) MerchantConfig::get('preview.width_mm', 150);
-        $heightMm = (float) MerchantConfig::get('preview.height_mm', 100);
+        $widthMm = (float) MerchantConfig::get('preview.width_mm', 100);
+        $heightMm = (float) MerchantConfig::get('preview.height_mm', 150);
 
         if ($widthMm <= 0) {
-            $widthMm = 150;
+            $widthMm = 100;
         }
 
         if ($heightMm <= 0) {
-            $heightMm = 100;
+            $heightMm = 150;
         }
 
-        $configuredRatio = MerchantConfig::get('preview.aspect_ratio');
-        $aspectRatio = is_numeric($configuredRatio)
-            ? (float) $configuredRatio
-            : $widthMm / $heightMm;
+        $aspectRatio = $heightMm > 0 ? $widthMm / $heightMm : 1.0;
 
         $safeZoneInsetMm = (float) MerchantConfig::get('preview.safe_zone_inset_mm', 5);
         $defaultZoom = (float) MerchantConfig::get('preview.default_zoom', 1.0);

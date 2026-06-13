@@ -36,6 +36,7 @@ return [
         'submit' => 'Register',
         'has_account' => 'Already have an account?',
         'login_link' => 'Log in',
+        'back_to_home' => 'Back to homepage',
     ],
 
     'forgot_password' => [

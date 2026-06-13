@@ -59,7 +59,7 @@
                                         class="merchant-upload-sample-icon-btn"
                                         title="{{ __('merchant.uploads.guides.sample_preview') }}"
                                         aria-label="{{ __('merchant.uploads.guides.sample_preview') }}: {{ $sample->label }}"
-                                        x-on:click="openSamplePreview(@js($sample->previewUrl()), @js($sample->label), @js($sample->previewKind), @js($sample->downloadName))"
+                                        x-on:click="openSamplePreview(@js($sample->previewUrl()), @js($sample->label), @js($sample->previewKind), @js($sample->downloadName), @js($sample->assetPath))"
                                     >
                                         @include('merchant.pages.uploads.partials.icons.eye')
                                     </button>

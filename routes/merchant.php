@@ -9,6 +9,9 @@ use App\Http\Controllers\Merchant\PdfUploadPreviewController;
 use App\Http\Controllers\Merchant\PrintJobRegenerateController;
 use App\Http\Controllers\Merchant\UploadController;
 use App\Http\Controllers\Merchant\UploadPreviewController;
+use App\Http\Controllers\Merchant\UploadSamplePreviewController;
+use App\Http\Controllers\Merchant\UploadSpreadsheetDownloadController;
+use App\Http\Controllers\Merchant\UploadSpreadsheetPreviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/dashboard', DashboardController::class)
@@ -18,6 +21,7 @@ Route::get('/dashboard', DashboardController::class)
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/uploads', [UploadController::class, 'index'])->name('uploads.index');
     Route::get('/uploads/create', [UploadController::class, 'create'])->name('uploads.create');
+    Route::get('/uploads/samples/preview', [UploadSamplePreviewController::class, 'show'])->name('uploads.samples.preview');
     Route::post('/uploads', [UploadController::class, 'store'])->name('uploads.store');
     Route::get('/uploads/{upload}', [UploadController::class, 'show'])->name('uploads.show');
     Route::delete('/uploads/{upload}', [UploadController::class, 'destroy'])->name('uploads.destroy');
@@ -25,6 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/uploads/{upload}/print-jobs/{printJob}/regenerate', PrintJobRegenerateController::class)->name('uploads.print_jobs.regenerate');
     Route::get('/uploads/{upload}/pdf-uploads/{pdfUpload}/preview', PdfUploadPreviewController::class)->name('uploads.pdf.preview');
     Route::get('/uploads/{upload}/pdf-uploads/{pdfUpload}/download', PdfUploadDownloadController::class)->name('uploads.pdf.download');
+    Route::get('/uploads/{upload}/spreadsheets/{index}/preview', UploadSpreadsheetPreviewController::class)->name('uploads.spreadsheet.preview');
+    Route::get('/uploads/{upload}/spreadsheets/{index}/download', UploadSpreadsheetDownloadController::class)->name('uploads.spreadsheet.download');
     Route::post('/uploads/{upload}/preview', [UploadPreviewController::class, 'show'])->name('uploads.preview.show');
 });
 

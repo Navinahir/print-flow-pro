@@ -26,6 +26,8 @@ class UploadService
     /**
      * @param  list<UploadedFile>  $files
      * @param  bool|null  $thermalCombinedOutput  When false and multiple PDFs, output one file per upload.
+     * @param  bool|null  $pickingCombinedOutput  When false and multiple spreadsheets, output one PDF per upload.
+     * @param  bool|null  $orderCombinedOutput  When false and multiple spreadsheets, output one PDF per upload.
      */
     public function createJob(
         User $user,
@@ -33,8 +35,10 @@ class UploadService
         UploadJobType $type,
         array $files,
         ?bool $thermalCombinedOutput = null,
+        ?bool $pickingCombinedOutput = null,
+        ?bool $orderCombinedOutput = null,
     ): UploadJob {
-        return DB::transaction(function () use ($user, $merchant, $type, $files, $thermalCombinedOutput): UploadJob {
+        return DB::transaction(function () use ($user, $merchant, $type, $files, $thermalCombinedOutput, $pickingCombinedOutput, $orderCombinedOutput): UploadJob {
             $fileCount = count($files);
             $metadata = [
                 'original_names' => array_map(
@@ -45,6 +49,18 @@ class UploadService
 
             if ($type === UploadJobType::ThermalLabel && $fileCount > 1) {
                 $metadata['thermal_output_mode'] = ($thermalCombinedOutput ?? true)
+                    ? 'combined'
+                    : 'separate';
+            }
+
+            if ($type === UploadJobType::PickingList && $fileCount > 1) {
+                $metadata['picking_output_mode'] = ($pickingCombinedOutput ?? true)
+                    ? 'combined'
+                    : 'separate';
+            }
+
+            if ($type === UploadJobType::OrderPdf && $fileCount > 1) {
+                $metadata['order_output_mode'] = ($orderCombinedOutput ?? true)
                     ? 'combined'
                     : 'separate';
             }
@@ -72,9 +88,7 @@ class UploadService
                 properties: ['file_count' => count($files)],
             );
 
-            if ($type === UploadJobType::ThermalLabel) {
-                $this->dispatchUploadProcessing->execute($job);
-            }
+            $this->dispatchUploadProcessing->execute($job);
 
             return $job->fresh(['pdfUploads', 'uploadedBy']);
         });

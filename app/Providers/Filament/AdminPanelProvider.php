@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Filament;
 
 use App\Filament\NavigationGroup;
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Widgets\PlatformStatsWidget;
 use App\Filament\Widgets\RecentAuditLogsWidget;
 use App\Http\Middleware\ConfigureDomainSession;
@@ -19,11 +20,13 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Actions\Action;
 use Filament\Navigation\NavigationGroup as FilamentNavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -36,8 +39,6 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $brandName = config('printflow.brand.name', 'XY Cubic Shopee');
-
         $adminDomain = (string) config('domains.admin.domain');
         $adminPath = config('domains.admin.path_prefix', config('printflow.admin.path', 'boss'));
         $resolver = $this->app->make(DomainResolver::class);
@@ -57,8 +58,11 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel
             ->login()
+            ->profile(EditProfile::class, isSimple: false)
             ->authGuard('web')
-            ->brandName($brandName)
+            ->brandName(fn (): string => request()->routeIs('filament.admin.auth.login')
+                ? (string) config('printflow.admin.login_brand_name', 'XYCubic Admin Portal')
+                : (string) config('printflow.admin.brand_name', 'XYCubic Admin'))
             ->brandLogo(config('printflow.brand.logo'))
             ->favicon(config('printflow.brand.favicon'))
             ->colors([
@@ -102,6 +106,22 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
                 EnsureAdminAccess::class,
             ])
-            ->sidebarCollapsibleOnDesktop();
+            ->sidebarCollapsibleOnDesktop()
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): \Illuminate\Contracts\View\View => view('filament.partials.sidebar-account-styles'),
+            )
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_FOOTER,
+                fn (): \Illuminate\Contracts\View\View => view('filament.partials.sidebar-account'),
+            )
+            ->userMenuItems([
+                'profile' => fn (Action $action): Action => $action
+                    ->label(__('admin.nav.profile'))
+                    ->sort(-2),
+                'logout' => fn (Action $action): Action => $action
+                    ->label(__('admin.nav.logout'))
+                    ->sort(-1),
+            ]);
     }
 }

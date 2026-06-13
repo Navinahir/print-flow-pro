@@ -10,6 +10,8 @@ return [
 
     'admin' => [
         'path' => env('PRINTFLOW_ADMIN_PATH', env('ADMIN_PATH_PREFIX', 'boss')),
+        'brand_name' => env('PRINTFLOW_ADMIN_BRAND_NAME', 'XYCubic Admin'),
+        'login_brand_name' => env('PRINTFLOW_ADMIN_LOGIN_BRAND_NAME', 'XYCubic Admin Portal'),
     ],
 
     'upload' => [

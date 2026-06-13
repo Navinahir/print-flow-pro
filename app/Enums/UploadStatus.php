@@ -9,6 +9,7 @@ enum UploadStatus: string
     case Pending = 'pending';
     case Processing = 'processing';
     case Completed = 'completed';
+    case CompletedWithErrors = 'completed_with_errors';
     case Failed = 'failed';
     case Cancelled = 'cancelled';
 
@@ -18,6 +19,7 @@ enum UploadStatus: string
             self::Pending => 'Pending',
             self::Processing => 'Processing',
             self::Completed => 'Completed',
+            self::CompletedWithErrors => 'Completed with errors',
             self::Failed => 'Failed',
             self::Cancelled => 'Cancelled',
         };

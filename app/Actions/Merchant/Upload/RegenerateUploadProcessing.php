@@ -21,19 +21,27 @@ class RegenerateUploadProcessing
 
     public function execute(UploadJob $uploadJob): UploadJob
     {
-        if ($uploadJob->type !== UploadJobType::ThermalLabel) {
+        if (! in_array($uploadJob->type, [
+            UploadJobType::ThermalLabel,
+            UploadJobType::PickingList,
+            UploadJobType::OrderPdf,
+        ], true)) {
             throw ValidationException::withMessages([
                 'upload' => __('merchant.uploads.errors.regenerate_unsupported'),
             ]);
         }
 
-        if (! in_array($uploadJob->status, [UploadStatus::Completed, UploadStatus::Failed], true)) {
+        if (! in_array($uploadJob->status, [
+            UploadStatus::Completed,
+            UploadStatus::CompletedWithErrors,
+            UploadStatus::Failed,
+        ], true)) {
             throw ValidationException::withMessages([
                 'upload' => __('merchant.uploads.errors.regenerate_not_ready'),
             ]);
         }
 
-        if ($uploadJob->pdfUploads()->count() === 0) {
+        if (! $this->hasSourceFiles($uploadJob)) {
             throw ValidationException::withMessages([
                 'upload' => __('merchant.uploads.errors.regenerate_missing_sources'),
             ]);
@@ -51,7 +59,7 @@ class RegenerateUploadProcessing
             }
 
             $metadata = $uploadJob->metadata ?? [];
-            unset($metadata['processing']);
+            unset($metadata['processing'], $metadata['spreadsheet_processing'], $metadata['file_errors']);
 
             $uploadJob->update([
                 'status' => UploadStatus::Pending,
@@ -75,5 +83,15 @@ class RegenerateUploadProcessing
 
             return $uploadJob->fresh(['pdfUploads', 'printJobs', 'uploadedBy']);
         });
+    }
+
+    private function hasSourceFiles(UploadJob $uploadJob): bool
+    {
+        return match ($uploadJob->type) {
+            UploadJobType::ThermalLabel => $uploadJob->pdfUploads()->count() > 0,
+            UploadJobType::PickingList, UploadJobType::OrderPdf => is_array($uploadJob->metadata['spreadsheet_files'] ?? null)
+                && count($uploadJob->metadata['spreadsheet_files']) > 0,
+            default => false,
+        };
     }
 }

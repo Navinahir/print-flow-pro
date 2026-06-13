@@ -21,6 +21,9 @@ final readonly class OrderDetailsPreviewData implements PrintingPreviewPayload
         public array $lineItems,
         public array $summary,
         public ?string $notes = null,
+        public ?string $downloadUrl = null,
+        public ?string $previewUrl = null,
+        public ?int $pageCount = null,
     ) {}
 
     public function type(): PrintingPreviewType
@@ -42,6 +45,9 @@ final readonly class OrderDetailsPreviewData implements PrintingPreviewPayload
             'line_items' => $this->lineItems,
             'summary' => $this->summary,
             'notes' => $this->notes,
+            'download_url' => $this->downloadUrl,
+            'preview_url' => $this->previewUrl,
+            'page_count' => $this->pageCount,
         ];
     }
 }

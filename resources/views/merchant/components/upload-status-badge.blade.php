@@ -4,6 +4,7 @@
     $value = $status instanceof \BackedEnum ? $status->value : (string) $status;
     $classes = match ($value) {
         'completed' => 'bg-emerald-100 text-emerald-800',
+        'completed_with_errors' => 'bg-amber-100 text-amber-800',
         'processing' => 'bg-amber-100 text-amber-800',
         'failed' => 'bg-red-100 text-red-800',
         'cancelled' => 'bg-slate-100 text-slate-700',

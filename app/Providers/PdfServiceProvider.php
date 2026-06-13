@@ -31,11 +31,17 @@ use App\Services\Merchant\Pdf\Pipeline\Stages\InitializeProcessingStage;
 use App\Services\Merchant\Pdf\Pipeline\Stages\NormalizeProcessingStage;
 use App\Services\Merchant\Pdf\Pipeline\Stages\PrepareCanvasStage;
 use App\Services\Merchant\Pdf\Pipeline\Stages\ValidateInputStage;
+use App\Services\Merchant\Pdf\PdfMergerService;
+use App\Services\Merchant\Pdf\ShopeeOrderPdfParser;
 use App\Services\Merchant\Pdf\Processors\LogisticsLabelsProcessor;
+use App\Services\Merchant\Pdf\Processors\OrderPdfProcessor;
+use App\Services\Merchant\Pdf\Processors\PickingListProcessor;
 use App\Services\Merchant\Pdf\Support\FpdiDocumentAdapter;
 use App\Services\Merchant\Pdf\ThermalA4SheetComposer;
 use App\Services\Merchant\Pdf\ThermalPdfNormalizationService;
 use App\Services\Merchant\Pdf\ThermalPdfValidationService;
+use App\Services\Merchant\Spreadsheet\SpreadsheetBatchRowParser;
+use App\Services\Merchant\Spreadsheet\SpreadsheetProcessingMetadataWriter;
 use Illuminate\Support\ServiceProvider;
 
 class PdfServiceProvider extends ServiceProvider
@@ -55,11 +61,19 @@ class PdfServiceProvider extends ServiceProvider
         $this->app->singleton(PdfNormalizationInterface::class, PdfNormalizationService::class);
         $this->app->singleton(PdfEngineInterface::class, PdfEngineService::class);
 
+        $this->app->singleton(PdfMergerService::class);
+        $this->app->singleton(ShopeeOrderPdfParser::class);
+        $this->app->singleton(SpreadsheetBatchRowParser::class);
+        $this->app->singleton(SpreadsheetProcessingMetadataWriter::class);
         $this->app->singleton(LogisticsLabelsProcessor::class);
+        $this->app->singleton(OrderPdfProcessor::class);
+        $this->app->singleton(PickingListProcessor::class);
 
         $this->app->singleton(PdfProcessorRegistry::class, function ($app): PdfProcessorRegistry {
             return new PdfProcessorRegistry([
                 $app->make(LogisticsLabelsProcessor::class),
+                $app->make(OrderPdfProcessor::class),
+                $app->make(PickingListProcessor::class),
             ]);
         });
 

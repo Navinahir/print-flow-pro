@@ -22,6 +22,7 @@ use App\Models\PdfUpload;
 use App\Models\PrintJob;
 use App\Models\UploadJob;
 use App\Services\Merchant\Pdf\PdfBoundaryDetectionService;
+use App\Services\Merchant\Pdf\PdfMergerService;
 use App\Services\Merchant\Pdf\PdfTempStorageService;
 use App\Services\Merchant\Pdf\ThermalA4SheetComposer;
 use Illuminate\Support\Collection;
@@ -40,6 +41,7 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
         private readonly ThermalA4SheetComposer $a4Composer,
         private readonly PdfBoundaryDetectionService $boundaryDetection,
         private readonly PdfTempStorageService $tempStorage,
+        private readonly PdfMergerService $merger,
     ) {}
 
     public function supports(PdfProcessingMode $mode): bool
@@ -79,7 +81,6 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
 
         $sourcePages = $this->resolveSourcePagesFromMetadata($context, $sourcePagesMeta);
         $preparedPages = $this->prepareLabelSlots($context, $sourcePages);
-        $sheetSources = $preparedPages;
 
         if ($printJob->output_path !== null && Storage::disk($printJob->output_disk)->exists($printJob->output_path)) {
             Storage::disk($printJob->output_disk)->delete($printJob->output_path);
@@ -92,9 +93,12 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
             new PdfTempPath((string) config('pdf.temp_disk', 'temp'), $outputRelative),
         );
 
-        $composition = $this->composeSheet($sheetSources, $outputAbsolute, $a4Spec);
-        $layoutMode = count($sheetSources) === 1 ? 'a4_single' : 'a4_multi';
-        $firstSource = $sheetSources[0];
+        $sheetGroups = array_chunk($preparedPages, $a4Spec->labelsPerPage);
+        $sheetPaths = $this->composeSheetGroupsToPaths($sheetGroups, $context, $a4Spec);
+        $this->finalizeMergedOutput($sheetPaths, $outputAbsolute);
+        $allSheetSources = array_merge(...$sheetGroups);
+        $layoutMode = count($allSheetSources) === 1 ? 'a4_single' : 'a4_multi';
+        $firstSource = $allSheetSources[0];
         $metrics = $firstSource['metrics'];
 
         $printJob->update([
@@ -113,9 +117,9 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
                 ...($printJob->metadata ?? []),
                 'layout_mode' => $layoutMode,
                 'sheet_number' => $sheetNumber,
-                'label_count' => count($sheetSources),
-                'source_pages' => $this->serializeSourcePages($sheetSources),
-                'a4' => $composition,
+                'label_count' => count($allSheetSources),
+                'page_count' => count($sheetGroups),
+                'source_pages' => $this->serializeSourcePages($allSheetSources),
                 'a4_spec' => $a4Spec->toArray(),
                 'regenerated_at' => now()->toIso8601String(),
             ],
@@ -223,9 +227,10 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
         $printJobIds = [];
         $a4Spec = ThermalA4OutputSpec::fromConfig();
         $expiresAt = now()->addMinutes((int) config('pdf.output_ttl_minutes', 10));
+        $outputBundles = $this->buildOutputBundles($sheetGroups, $outputMode);
 
         DB::transaction(function () use (
-            $sheetGroups,
+            $outputBundles,
             $context,
             $outputMode,
             $a4Spec,
@@ -233,11 +238,12 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
             &$outputPaths,
             &$printJobIds,
         ): void {
-            foreach ($sheetGroups as $sheetIndex => $sheetSources) {
-                $sheetNumber = $sheetIndex + 1;
-                $printJob = $this->createPrintJobForSheet(
+            foreach ($outputBundles as $bundleIndex => $bundle) {
+                $bundleSheetGroups = $bundle['sheet_groups'];
+                $sheetNumber = $bundleIndex + 1;
+                $printJob = $this->createPrintJobForBundle(
                     context: $context,
-                    sheetSources: $sheetSources,
+                    bundleSheetGroups: $bundleSheetGroups,
                     sheetNumber: $sheetNumber,
                     outputMode: $outputMode,
                     a4Spec: $a4Spec,
@@ -249,9 +255,8 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
             }
         });
 
-        $primaryLayout = count($sheetGroups) === 1 && count($sheetGroups[0]) === 1
-            ? 'a4_single'
-            : 'a4_multi';
+        $allLabels = array_sum(array_map(static fn (array $group): int => count($group), $sheetGroups));
+        $primaryLayout = $allLabels === 1 ? 'a4_single' : 'a4_multi';
 
         return new PdfNormalizationResult(
             implemented: true,
@@ -271,11 +276,55 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
     }
 
     /**
-     * @param  list<array<string, mixed>>  $sheetSources
+     * @param  list<list<array<string, mixed>>>  $sheetGroups
+     * @return list<array{sheet_groups: list<list<array<string, mixed>>>, pdf_upload_id: int|null}>
      */
-    private function createPrintJobForSheet(
+    private function buildOutputBundles(array $sheetGroups, ThermalOutputMode $outputMode): array
+    {
+        if ($outputMode === ThermalOutputMode::Combined) {
+            return [
+                [
+                    'sheet_groups' => $sheetGroups,
+                    'pdf_upload_id' => $sheetGroups[0][0]['pdf_upload_id'] ?? null,
+                ],
+            ];
+        }
+
+        $bundles = [];
+        $currentUploadId = null;
+        $currentGroups = [];
+
+        foreach ($sheetGroups as $sheetGroup) {
+            $uploadId = (int) ($sheetGroup[0]['pdf_upload_id'] ?? 0);
+
+            if ($currentUploadId !== null && $uploadId !== $currentUploadId) {
+                $bundles[] = [
+                    'sheet_groups' => $currentGroups,
+                    'pdf_upload_id' => $currentUploadId,
+                ];
+                $currentGroups = [];
+            }
+
+            $currentUploadId = $uploadId;
+            $currentGroups[] = $sheetGroup;
+        }
+
+        if ($currentGroups !== []) {
+            $bundles[] = [
+                'sheet_groups' => $currentGroups,
+                'pdf_upload_id' => $currentUploadId,
+            ];
+        }
+
+        return $bundles;
+    }
+
+    /**
+     * @param  list<list<array<string, mixed>>>  $bundleSheetGroups
+     */
+    private function createPrintJobForBundle(
         PdfProcessingContext $context,
-        array $sheetSources,
+        array $bundleSheetGroups,
         int $sheetNumber,
         ThermalOutputMode $outputMode,
         ThermalA4OutputSpec $a4Spec,
@@ -286,9 +335,12 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
             new PdfTempPath((string) config('pdf.temp_disk', 'temp'), $outputRelative),
         );
 
-        $composition = $this->composeSheet($sheetSources, $outputAbsolute, $a4Spec);
-        $layoutMode = count($sheetSources) === 1 ? 'a4_single' : 'a4_multi';
-        $firstSource = $sheetSources[0];
+        $sheetPaths = $this->composeSheetGroupsToPaths($bundleSheetGroups, $context, $a4Spec);
+        $this->finalizeMergedOutput($sheetPaths, $outputAbsolute);
+
+        $allSheetSources = array_merge(...$bundleSheetGroups);
+        $layoutMode = count($allSheetSources) === 1 ? 'a4_single' : 'a4_multi';
+        $firstSource = $allSheetSources[0];
         $metrics = $firstSource['metrics'];
         $sourceFileName = (string) $firstSource['original_name'];
 
@@ -312,14 +364,83 @@ class LogisticsLabelsProcessor implements PdfProcessorInterface
             'metadata' => [
                 'layout_mode' => $layoutMode,
                 'sheet_number' => $sheetNumber,
-                'label_count' => count($sheetSources),
+                'label_count' => count($allSheetSources),
+                'page_count' => count($bundleSheetGroups),
                 'thermal_output_mode' => $outputMode->value,
                 'source_file_name' => $sourceFileName,
-                'source_pages' => $this->serializeSourcePages($sheetSources),
-                'a4' => $composition,
+                'source_pages' => $this->serializeSourcePages($allSheetSources),
                 'a4_spec' => $a4Spec->toArray(),
             ],
         ]);
+    }
+
+    /**
+     * @param  list<list<array<string, mixed>>>  $sheetGroups
+     * @return list<string>
+     */
+    private function composeSheetGroupsToPaths(
+        array $sheetGroups,
+        PdfProcessingContext $context,
+        ThermalA4OutputSpec $a4Spec,
+    ): array {
+        $sheetPaths = [];
+
+        foreach ($sheetGroups as $sheetIndex => $sheetSources) {
+            $tempRelative = $this->buildWorkRelativePath(
+                $context,
+                (int) ($sheetSources[0]['pdf_upload_id'] ?? 0),
+                (int) ($sheetSources[0]['page'] ?? 0),
+            ).'-sheet'.($sheetIndex + 1).'.pdf';
+            $tempAbsolute = $this->tempStorage->absolutePath(
+                new PdfTempPath((string) config('pdf.temp_disk', 'temp'), $tempRelative),
+            );
+
+            $this->composeSheet($sheetSources, $tempAbsolute, $a4Spec);
+            $sheetPaths[] = $tempAbsolute;
+        }
+
+        return $sheetPaths;
+    }
+
+    /**
+     * @param  list<string>  $sheetPaths
+     */
+    private function finalizeMergedOutput(array $sheetPaths, string $outputAbsolute): void
+    {
+        if ($sheetPaths === []) {
+            throw PdfNormalizationException::failed('No thermal sheets were composed.');
+        }
+
+        if (count($sheetPaths) === 1) {
+            $this->ensureOutputDirectory($outputAbsolute);
+
+            if (! rename($sheetPaths[0], $outputAbsolute)) {
+                if (! copy($sheetPaths[0], $outputAbsolute)) {
+                    throw PdfNormalizationException::failed('Could not finalize thermal output file.');
+                }
+
+                @unlink($sheetPaths[0]);
+            }
+
+            return;
+        }
+
+        $this->merger->mergeToFile($sheetPaths, $outputAbsolute);
+
+        foreach ($sheetPaths as $sheetPath) {
+            if (is_file($sheetPath)) {
+                @unlink($sheetPath);
+            }
+        }
+    }
+
+    private function ensureOutputDirectory(string $outputAbsolutePath): void
+    {
+        $directory = dirname($outputAbsolutePath);
+
+        if (! is_dir($directory) && ! mkdir($directory, 0755, true) && ! is_dir($directory)) {
+            throw PdfNormalizationException::failed('Could not create output directory.');
+        }
     }
 
     /**

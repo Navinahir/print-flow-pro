@@ -33,7 +33,15 @@ class UploadPreviewService
         $job->loadMissing(['pdfUploads', 'deliveryLabels', 'printJobs']);
 
         if ($job->type === UploadJobType::ThermalLabel) {
-            return $this->resolveThermalLabelPreview($job, $itemId);
+            return $this->resolvePrintJobPreview($job, $itemId, UploadJobType::ThermalLabel);
+        }
+
+        if ($job->type === UploadJobType::OrderPdf) {
+            return $this->resolvePrintJobPreview($job, $itemId, UploadJobType::OrderPdf);
+        }
+
+        if ($job->type === UploadJobType::PickingList) {
+            return $this->resolvePrintJobPreview($job, $itemId, UploadJobType::PickingList);
         }
 
         $preview = $this->buildPreviewPayload($job);
@@ -45,9 +53,18 @@ class UploadPreviewService
         );
     }
 
-    private function resolveThermalLabelPreview(UploadJob $job, ?string $itemId): UploadPreviewResult
+    private function resolvePrintJobPreview(UploadJob $job, ?string $itemId, UploadJobType $type): UploadPreviewResult
     {
         if ($job->status === UploadStatus::Failed) {
+            return new UploadPreviewResult(
+                available: false,
+                preview: null,
+                previewType: null,
+                statusMessage: $job->error_message ?? __('merchant.uploads.preview.processing_failed'),
+            );
+        }
+
+        if ($job->status === UploadStatus::CompletedWithErrors && $job->printJobs->isEmpty()) {
             return new UploadPreviewResult(
                 available: false,
                 preview: null,
@@ -80,7 +97,7 @@ class UploadPreviewService
         }
 
         $items = $printJobs
-            ->map(fn (PrintJob $printJob): array => $this->printJobItem($printJob, $job, $printJobs))
+            ->map(fn (PrintJob $printJob): array => $this->printJobItem($printJob, $job, $printJobs, $type))
             ->all();
         $selected = $this->selectItem($items, $itemId) ?? $items[0];
 
@@ -116,10 +133,18 @@ class UploadPreviewService
      * @param  \Illuminate\Support\Collection<int, PrintJob>  $allPrintJobs
      * @return array<string, mixed>
      */
-    private function printJobItem(PrintJob $printJob, UploadJob $uploadJob, \Illuminate\Support\Collection $allPrintJobs): array
-    {
+    private function printJobItem(
+        PrintJob $printJob,
+        UploadJob $uploadJob,
+        \Illuminate\Support\Collection $allPrintJobs,
+        UploadJobType $type,
+    ): array {
         $formatted = $this->uploadShowViewService->formatPrintOutput($printJob, $uploadJob, $allPrintJobs);
-        $preview = $this->logisticsLabelsPreviewService->buildFromPrintJob($printJob)->toArray();
+        $preview = match ($type) {
+            UploadJobType::OrderPdf => $this->orderDetailsPreviewService->buildFromPrintJob($printJob)->toArray(),
+            UploadJobType::PickingList => $this->pickingListPreviewService->buildFromPrintJob($printJob)->toArray(),
+            default => $this->logisticsLabelsPreviewService->buildFromPrintJob($printJob)->toArray(),
+        };
 
         return [
             'id' => $formatted['list_id'],
@@ -138,16 +163,11 @@ class UploadPreviewService
      */
     private function buildPreviewPayload(UploadJob $job): ?array
     {
-        return match ($job->type) {
-            UploadJobType::OrderPdf => $this->orderDetailsPreviewService
-                ->buildSamplePreview((string) $job->id)
-                ->toArray(),
-            UploadJobType::PickingList => $this->pickingListPreviewService
-                ->buildSamplePreview((string) $job->id)
-                ->toArray(),
-            UploadJobType::DeliveryLabel => $this->buildDeliveryLabelPreview($job),
-            default => null,
-        };
+        if ($job->type === UploadJobType::DeliveryLabel) {
+            return $this->buildDeliveryLabelPreview($job);
+        }
+
+        return null;
     }
 
     /**

@@ -1,10 +1,10 @@
-export const PREVIEW_WIDTH_MM = 150;
+export const PREVIEW_WIDTH_MM = 100;
 
-export const PREVIEW_HEIGHT_MM = 100;
+export const PREVIEW_HEIGHT_MM = 150;
 
 export const PREVIEW_ASPECT_RATIO = PREVIEW_WIDTH_MM / PREVIEW_HEIGHT_MM;
 
-/** 96 CSS dpi — logical pixel size of the 150×100 mm canvas before scaling */
+/** 96 CSS dpi — logical pixel size of the 100×150 mm canvas before scaling */
 export const PREVIEW_BASE_WIDTH_PX = (PREVIEW_WIDTH_MM * 96) / 25.4;
 
 export const PREVIEW_BASE_HEIGHT_PX = (PREVIEW_HEIGHT_MM * 96) / 25.4;

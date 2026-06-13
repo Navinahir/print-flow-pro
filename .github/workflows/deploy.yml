@@ -16,5 +16,4 @@ jobs:
           username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /var/www/xycubic
-            sh scripts/deploy.sh
+            sh /var/www/xycubic/deploy.sh

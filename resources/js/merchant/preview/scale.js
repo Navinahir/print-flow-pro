@@ -11,8 +11,8 @@ import {
  * @returns {{ widthPx: number, heightPx: number }}
  */
 export function getPreviewBaseDimensions(container) {
-    const widthMm = parseFloat(container.dataset.previewWidthMm || '150');
-    const heightMm = parseFloat(container.dataset.previewHeightMm || '100');
+    const widthMm = parseFloat(container.dataset.previewWidthMm || '100');
+    const heightMm = parseFloat(container.dataset.previewHeightMm || '150');
 
     return {
         widthPx: (widthMm * 96) / 25.4,

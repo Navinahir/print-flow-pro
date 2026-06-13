@@ -40,6 +40,8 @@ class StoreUploadRequest extends FormRequest
                 File::types($extensions)->max($maxKb),
             ],
             'thermal_combined_output' => ['nullable', 'boolean'],
+            'picking_combined_output' => ['nullable', 'boolean'],
+            'order_combined_output' => ['nullable', 'boolean'],
         ];
     }
 
@@ -69,5 +71,15 @@ class StoreUploadRequest extends FormRequest
     public function thermalCombinedOutput(): bool
     {
         return $this->boolean('thermal_combined_output', true);
+    }
+
+    public function pickingCombinedOutput(): bool
+    {
+        return $this->boolean('picking_combined_output', true);
+    }
+
+    public function orderCombinedOutput(): bool
+    {
+        return $this->boolean('order_combined_output', true);
     }
 }

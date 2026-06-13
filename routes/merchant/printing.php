@@ -31,6 +31,14 @@ Route::middleware(['auth', 'verified'])
             ->middleware('printing.module:order_details')
             ->name('order_details.index');
 
+        Route::get('order-details/print-jobs/{printJob}/download', PrintJobDownloadController::class)
+            ->middleware('printing.module:order_details')
+            ->name('order_details.download');
+
+        Route::get('order-details/print-jobs/{printJob}/preview', PrintJobPreviewController::class)
+            ->middleware('printing.module:order_details')
+            ->name('order_details.preview');
+
         Route::get('logistics-labels', [LogisticsLabelsController::class, 'index'])
             ->middleware('printing.module:logistics_labels')
             ->name('logistics_labels.index');
@@ -46,6 +54,14 @@ Route::middleware(['auth', 'verified'])
         Route::get('picking-list', [PickingListController::class, 'index'])
             ->middleware('printing.module:picking_list')
             ->name('picking_list.index');
+
+        Route::get('picking-list/print-jobs/{printJob}/download', PrintJobDownloadController::class)
+            ->middleware('printing.module:picking_list')
+            ->name('picking_list.download');
+
+        Route::get('picking-list/print-jobs/{printJob}/preview', PrintJobPreviewController::class)
+            ->middleware('printing.module:picking_list')
+            ->name('picking_list.preview');
 
         Route::get('delivery-labels', [DeliveryLabelsController::class, 'index'])
             ->middleware('printing.module:delivery_labels')

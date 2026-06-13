@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 use App\Services\Merchant\Pdf\Processors\LogisticsLabelsProcessor;
+use App\Services\Merchant\Pdf\Processors\OrderPdfProcessor;
 
 return [
 
@@ -34,10 +35,10 @@ return [
     */
 
     'canvas' => [
-        'width_mm' => 150.0,
-        'height_mm' => 100.0,
+        'width_mm' => 100.0,
+        'height_mm' => 150.0,
         'safe_zone_inset_mm' => 5.0,
-        'aspect_ratio' => 1.5,
+        'aspect_ratio' => 100 / 150,
     ],
 
     /*
@@ -55,8 +56,8 @@ return [
         'page_width_mm' => 210.0,
         'page_height_mm' => 297.0,
         'label' => [
-            'width_mm' => 105.0,
-            'height_mm' => 148.0,
+            'width_mm' => 100.0,
+            'height_mm' => 150.0,
             'safe_zone_inset_mm' => 0.0,
         ],
         'single' => [
@@ -116,7 +117,7 @@ return [
         ],
         'order_pdf_merge' => [
             'enabled' => true,
-            'processor' => null,
+            'processor' => OrderPdfProcessor::class,
         ],
         'delivery_label' => [
             'enabled' => true,
@@ -124,7 +125,7 @@ return [
         ],
         'picking_list_export' => [
             'enabled' => true,
-            'processor' => null,
+            'processor' => \App\Services\Merchant\Pdf\Processors\PickingListProcessor::class,
         ],
     ],
 
@@ -137,6 +138,55 @@ return [
     'fpdi' => [
         'default_orientation' => 'P',
         'unit' => 'mm',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Picking list PDF output (Shopee-style pick sheet)
+    |--------------------------------------------------------------------------
+    */
+
+    'picking_list' => [
+        'title' => '撿貨單',
+        'account_label' => '使用者帳號',
+        'generated_at_label' => '下載時間',
+        'package_label' => 'package',
+        'columns' => [
+            'main_sku' => '主商品貨號',
+            'image' => '商品圖片',
+            'product_name' => '商品名稱',
+            'variant_sku' => '商品選項貨號',
+            'variant_name' => '商品規格名稱',
+            'quantity' => '數量',
+            'order_sn' => '訂單編號',
+        ],
+    ],
+
+    'order_pdf' => [
+        'orders_per_page' => 2,
+        'slot_padding_mm' => 2,
+        'font_size' => 12,
+        'heading_font_size' => 15,
+        'table_font_size' => 11,
+        'margins' => [
+            'left' => 10,
+            'right' => 10,
+            'top' => 10,
+            'bottom' => 14,
+        ],
+        'page_footer' => '-- {PAGENO} of {nbpg} --',
+        'section_title' => '商品列表',
+        'order_number_label' => '訂單編號 (單)',
+        'package_label' => 'package',
+        'buyer_note_label' => '買家備註',
+        'columns' => [
+            'main_sku' => '主商品貨號',
+            'product_name' => '商品名稱',
+            'variant_sku' => '商品選項貨號',
+            'variant_name' => '商品規格名稱',
+            'quantity' => '數量',
+            'total' => '總計',
+        ],
     ],
 
 ];

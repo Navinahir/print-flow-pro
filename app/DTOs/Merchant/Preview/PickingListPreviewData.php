@@ -10,7 +10,14 @@ use App\Enums\PrintingPreviewType;
 final readonly class PickingListPreviewData implements PrintingPreviewPayload
 {
     /**
-     * @param  list<array{sku: string, name: string, location: string, quantity: int}>  $rows
+     * @param  list<array{
+     *     line_number: int,
+     *     order_sn: string,
+     *     product_name: string,
+     *     variant_name: string,
+     *     variant_sku: string,
+     *     quantity: int
+     * }>  $rows
      */
     public function __construct(
         public string $listReference,

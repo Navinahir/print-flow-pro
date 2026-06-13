@@ -110,6 +110,12 @@
     background: rgb(248 250 252);
 }
 
+.merchant-upload-sample-modal__body:has(.merchant-upload-sample-modal__csv--spreadsheet) {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
 .dark .merchant-upload-sample-modal__body {
     background: rgb(2 6 23);
 }
@@ -124,6 +130,15 @@
 
 .merchant-upload-sample-modal__csv,
 .merchant-upload-sample-modal__empty {
+    padding: 1.25rem;
+}
+
+.merchant-upload-sample-modal__csv--spreadsheet {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-height: 0;
     padding: 1.25rem;
 }
 
@@ -144,6 +159,60 @@
     border-color: rgb(51 65 85);
     background: rgb(15 23 42);
     color: rgb(226 232 240);
+}
+
+.merchant-upload-sample-modal__table-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(255 255 255);
+}
+
+.dark .merchant-upload-sample-modal__table-wrap {
+    border-color: rgb(51 65 85);
+    background: rgb(15 23 42);
+}
+
+.merchant-upload-sample-modal__table {
+    width: max-content;
+    min-width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.75rem;
+}
+
+.merchant-upload-sample-modal__table th,
+.merchant-upload-sample-modal__table td {
+    border: 1px solid rgb(226 232 240);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+    word-break: break-word;
+    min-width: 9rem;
+    max-width: 22rem;
+}
+
+.merchant-upload-sample-modal__table th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: rgb(248 250 252);
+    font-weight: 600;
+    box-shadow: inset 0 -1px 0 rgb(226 232 240);
+}
+
+.dark .merchant-upload-sample-modal__table th,
+.dark .merchant-upload-sample-modal__table td {
+    border-color: rgb(51 65 85);
+}
+
+.dark .merchant-upload-sample-modal__table th {
+    background: rgb(30 41 59);
+    box-shadow: inset 0 -1px 0 rgb(51 65 85);
 }
 
 body.merchant-upload-sample-modal-open {
@@ -168,23 +237,55 @@ body.merchant-upload-sample-modal-open {
     align-items: start;
 }
 
-.merchant-upload-show__columns {
+.merchant-upload-show__columns,
+.merchant-upload-show__t-layout {
     display: grid;
     gap: 1.5rem;
     align-items: start;
 }
 
 @media (min-width: 1024px) {
-    .merchant-upload-show__columns {
+    .merchant-upload-show__columns,
+    .merchant-upload-show__t-layout {
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 }
 
-.merchant-upload-show__column {
+.merchant-upload-show__column,
+.merchant-upload-show__t-left,
+.merchant-upload-show__t-right {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
     min-width: 0;
+    width: 100%;
+}
+
+.merchant-upload-show__t-right {
+    align-self: stretch;
+}
+
+.merchant-upload-show__t-right-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.merchant-upload-show__t-right-stack .merchant-upload-show__outputs-wrap {
+    width: 100%;
+}
+
+.merchant-upload-show__t-right-stack .merchant-upload-show__outputs-header {
+    margin-bottom: 0.25rem;
+}
+
+.merchant-upload-show__t-left .merchant-upload-show__error-card,
+.merchant-upload-show__t-left .merchant-upload-show__warning-card {
+    margin-top: 0;
+}
+
+.merchant-upload-show__below-t {
+    margin-top: 1.5rem;
 }
 
 .merchant-upload-show__section--wide {
@@ -239,6 +340,40 @@ body.merchant-upload-sample-modal-open {
 
 .merchant-upload-show__status-banner--completed {
     border-left: 4px solid rgb(16 185 129);
+}
+
+.merchant-upload-show__status-banner--warning {
+    border-left: 4px solid rgb(245 158 11);
+}
+
+.merchant-upload-show__file-status {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.merchant-upload-show__file-status--completed {
+    color: rgb(5 150 105);
+}
+
+.merchant-upload-show__file-status--failed {
+    color: rgb(220 38 38);
+}
+
+.merchant-upload-show__file-error {
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: rgb(220 38 38);
+}
+
+.merchant-upload-show__warning-card {
+    border-color: rgb(251 191 36);
+    background: rgb(255 251 235);
+}
+
+.dark .merchant-upload-show__warning-card {
+    border-color: rgb(180 83 9);
+    background: rgb(69 26 3 / 0.35);
 }
 
 .merchant-upload-show__status-banner--failed {
@@ -428,19 +563,179 @@ body.merchant-upload-sample-modal-open {
 .merchant-upload-show__output-grid--cards {
     display: grid;
     gap: 0.875rem;
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
 }
 
-@media (min-width: 768px) {
-    .merchant-upload-show__output-grid--cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
+.merchant-upload-show__output-grid--stack {
+    grid-template-columns: minmax(0, 1fr);
 }
 
 .merchant-upload-show__output-section {
     border-left: 4px solid rgb(245 158 11);
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
+}
+
+.merchant-upload-show__t-right .merchant-upload-show__outputs-wrap,
+.merchant-upload-show__t-right .merchant-upload-show__output-grid--cards,
+.merchant-upload-show__t-right .merchant-upload-show__output-section {
+    width: 100%;
+    max-width: none;
+}
+
+.merchant-upload-show__column--right {
+    width: 100%;
+}
+
+.merchant-upload-show__column--right .merchant-upload-show__outputs-wrap {
+    width: 100%;
+    margin-top: 0;
+}
+
+.merchant-upload-show__outputs-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+    width: 100%;
+}
+
+.merchant-upload-show__outputs-header {
+    margin-bottom: 0.125rem;
+}
+
+.merchant-upload-show__output-panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: rgb(15 23 42);
+    margin: 0;
+}
+
+.dark .merchant-upload-show__output-panel-title {
+    color: rgb(241 245 249);
+}
+
+.merchant-upload-show__output-card-intro {
+    min-width: 0;
+    flex: 1 1 auto;
+}
+
+.merchant-upload-show__output-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.875rem;
+}
+
+.merchant-upload-show__output-stat {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    background: rgb(255 251 235);
+    color: rgb(146 64 14);
+    padding: 0.2rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.merchant-upload-show__output-stat--muted {
+    background: rgb(241 245 249);
+    color: rgb(71 85 105);
+    font-weight: 500;
+}
+
+.dark .merchant-upload-show__output-stat {
+    background: rgb(69 26 3);
+    color: rgb(253 230 138);
+}
+
+.dark .merchant-upload-show__output-stat--muted {
+    background: rgb(30 41 59);
+    color: rgb(148 163 184);
+}
+
+.merchant-upload-show__output-sources-label {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: rgb(100 116 139);
+}
+
+.dark .merchant-upload-show__output-sources-label {
+    color: rgb(148 163 184);
+}
+
+.merchant-upload-show__source-group-list {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 768px) {
+    .merchant-upload-show__source-group-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.merchant-upload-show__source-group-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(255 255 255);
+    padding: 0.5rem 0.75rem;
+}
+
+.dark .merchant-upload-show__source-group-item {
+    border-color: rgb(51 65 85);
+    background: rgb(15 23 42);
+}
+
+.merchant-upload-show__source-group-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: rgb(30 41 59);
+}
+
+.dark .merchant-upload-show__source-group-name {
+    color: rgb(226 232 240);
+}
+
+.merchant-upload-show__source-group-count {
+    flex-shrink: 0;
+    border-radius: 9999px;
+    background: rgb(241 245 249);
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(71 85 105);
+}
+
+.dark .merchant-upload-show__source-group-count {
+    background: rgb(30 41 59);
+    color: rgb(203 213 225);
+}
+
+.merchant-upload-show__output-sources--compact {
+    margin-top: 0.875rem;
 }
 
 .merchant-upload-show__output-card {
+    width: 100%;
+    max-width: none;
+    box-sizing: border-box;
     border-radius: 0.75rem;
     border: 1px solid rgb(226 232 240);
     background: rgb(248 250 252);
@@ -515,6 +810,7 @@ body.merchant-upload-sample-modal-open {
     flex-wrap: wrap;
     gap: 0.5rem;
     margin-top: 1rem;
+    align-items: center;
 }
 
 .merchant-upload-show__preview-card {
@@ -749,6 +1045,26 @@ body.merchant-upload-file-modal-open {
     color: rgb(226 232 240);
 }
 
+.merchant-upload-index-link {
+    color: rgb(180 83 9);
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.merchant-upload-index-link:hover {
+    color: rgb(217 119 6);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.dark .merchant-upload-index-link {
+    color: rgb(251 191 36);
+}
+
+.dark .merchant-upload-index-link:hover {
+    color: rgb(252 211 77);
+}
+
 .merchant-upload-index-actions {
     display: flex;
     align-items: center;
@@ -792,11 +1108,52 @@ body.merchant-upload-file-modal-open {
 
 .merchant-upload-show__print-frame {
     position: fixed;
-    right: 0;
-    bottom: 0;
-    width: 0;
-    height: 0;
+    top: 0;
+    left: -100vw;
+    width: 100vw;
+    height: 100vh;
     border: 0;
-    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.merchant-upload-show__regenerate-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 95;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgb(255 255 255 / 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    pointer-events: auto;
+    cursor: wait;
+}
+
+.dark .merchant-upload-show__regenerate-overlay {
+    background: rgb(2 6 23 / 0.7);
+}
+
+.merchant-upload-show__regenerate-overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.merchant-upload-show__regenerate-overlay-message {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: rgb(71 85 105);
+}
+
+.dark .merchant-upload-show__regenerate-overlay-message {
+    color: rgb(203 213 225);
+}
+
+body.merchant-upload-regenerating {
+    overflow: hidden;
 }
 

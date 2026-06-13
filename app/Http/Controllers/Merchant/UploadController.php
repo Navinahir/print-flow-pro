@@ -76,6 +76,12 @@ class UploadController extends Controller
             thermalCombinedOutput: $request->uploadType() === UploadJobType::ThermalLabel
                 ? $request->thermalCombinedOutput()
                 : null,
+            pickingCombinedOutput: $request->uploadType() === UploadJobType::PickingList
+                ? $request->pickingCombinedOutput()
+                : null,
+            orderCombinedOutput: $request->uploadType() === UploadJobType::OrderPdf
+                ? $request->orderCombinedOutput()
+                : null,
         );
 
         return redirect()
@@ -87,7 +93,7 @@ class UploadController extends Controller
     {
         $this->authorize('view', $upload);
 
-        $upload->load(['pdfUploads', 'uploadedBy', 'merchant', 'deliveryLabels', 'printJobs.pdfUpload']);
+        $upload->load(['pdfUploads', 'pickingLists', 'uploadedBy', 'merchant', 'deliveryLabels', 'printJobs.pdfUpload']);
 
         $uploadPreview = $this->uploadPreviewService->resolve($upload);
         $showView = $this->uploadShowViewService->prepare($upload, $uploadPreview);

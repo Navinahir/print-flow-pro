@@ -35,7 +35,13 @@ enum UploadJobType: string
     public static function allowedMimeTypes(): array
     {
         return match ($this) {
-            self::OrderPdf, self::ThermalLabel => [
+            self::OrderPdf => [
+                'text/csv',
+                'text/plain',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ],
+            self::ThermalLabel => [
                 'application/pdf',
             ],
             self::DeliveryLabel => [
@@ -60,9 +66,9 @@ enum UploadJobType: string
     public function fileExtensions(): array
     {
         return match ($this) {
-            self::OrderPdf, self::ThermalLabel => ['pdf'],
+            self::ThermalLabel => ['pdf'],
+            self::OrderPdf, self::PickingList => ['csv', 'xlsx', 'xls'],
             self::DeliveryLabel => ['pdf', 'csv', 'xlsx', 'xls'],
-            self::PickingList => ['csv', 'xlsx', 'xls'],
         };
     }
 }

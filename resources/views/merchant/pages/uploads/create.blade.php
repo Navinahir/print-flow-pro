@@ -45,36 +45,70 @@
                                 @endforeach
                             </select>
                         </x-merchant.form.field>
-                        <p class="mt-2 text-xs text-slate-500" x-show="type === 'order_pdf' || type === 'thermal_label'">
+                        <p class="mt-2 text-xs text-slate-500" x-show="type === 'thermal_label'">
                             {{ __('merchant.uploads.form.accepted_pdf') }}
+                        </p>
+                        <p class="mt-2 text-xs text-slate-500" x-show="type === 'order_pdf' || type === 'picking_list'" x-cloak>
+                            {{ __('merchant.uploads.form.accepted_spreadsheet') }}
                         </p>
                         <p class="mt-2 text-xs text-slate-500" x-show="type === 'delivery_label'" x-cloak>
                             {{ __('merchant.uploads.form.accepted_delivery') }}
-                        </p>
-                        <p class="mt-2 text-xs text-slate-500" x-show="type === 'picking_list'" x-cloak>
-                            {{ __('merchant.uploads.form.accepted_spreadsheet') }}
                         </p>
                     </div>
 
                     <div
                         class="merchant-card"
-                        x-show="type === 'thermal_label' && fileList.length > 1"
+                        x-show="(type === 'thermal_label' || type === 'picking_list' || type === 'order_pdf') && fileList.length > 1"
                         x-cloak
                     >
                         <div class="merchant-upload-thermal-output-option">
                             <div class="merchant-upload-thermal-output-option__copy">
-                                <p class="merchant-upload-thermal-output-option__label">{{ __('merchant.uploads.form.thermal_output_heading') }}</p>
-                                <p class="merchant-upload-thermal-output-option__hint">{{ __('merchant.uploads.form.thermal_output_hint') }}</p>
+                                <p class="merchant-upload-thermal-output-option__label">{{ __('merchant.uploads.form.output_heading') }}</p>
+                                <p
+                                    class="merchant-upload-thermal-output-option__hint"
+                                    x-show="type === 'thermal_label'"
+                                    x-cloak
+                                >{{ __('merchant.uploads.form.thermal_output_hint') }}</p>
+                                <p
+                                    class="merchant-upload-thermal-output-option__hint"
+                                    x-show="type === 'picking_list'"
+                                    x-cloak
+                                >{{ __('merchant.uploads.form.picking_output_hint') }}</p>
+                                <p
+                                    class="merchant-upload-thermal-output-option__hint"
+                                    x-show="type === 'order_pdf'"
+                                    x-cloak
+                                >{{ __('merchant.uploads.form.order_output_hint') }}</p>
                             </div>
                             <label class="merchant-upload-toggle merchant-upload-thermal-output-option__toggle">
-                                <input type="hidden" name="thermal_combined_output" :value="thermalCombinedOutput ? 1 : 0">
+                                <input
+                                    type="hidden"
+                                    name="thermal_combined_output"
+                                    :value="combinedOutput ? 1 : 0"
+                                    :disabled="type !== 'thermal_label'"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="picking_combined_output"
+                                    :value="combinedOutput ? 1 : 0"
+                                    :disabled="type !== 'picking_list'"
+                                >
+                                <input
+                                    type="hidden"
+                                    name="order_combined_output"
+                                    :value="combinedOutput ? 1 : 0"
+                                    :disabled="type !== 'order_pdf'"
+                                >
                                 <input
                                     type="checkbox"
                                     class="merchant-upload-toggle__input"
-                                    x-model="thermalCombinedOutput"
+                                    x-model="combinedOutput"
                                 >
                                 <span class="merchant-upload-toggle__track" aria-hidden="true"></span>
-                                <span class="merchant-upload-toggle__text" x-text="thermalCombinedOutput ? @js(__('merchant.uploads.form.thermal_output_combined')) : @js(__('merchant.uploads.form.thermal_output_separate'))"></span>
+                                <span
+                                    class="merchant-upload-toggle__text"
+                                    x-text="combinedOutput ? @js(__('merchant.uploads.form.output_combined')) : @js(__('merchant.uploads.form.output_separate'))"
+                                ></span>
                             </label>
                         </div>
                     </div>
